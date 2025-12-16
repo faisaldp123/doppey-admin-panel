@@ -18,7 +18,7 @@ export default function AdminLogin() {
       const res = await axios.post(`${API_URL}/api/admin/login`, { password });
 
       // ✅ Save token in localStorage (browser only)
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined") {   
         localStorage.setItem("token", res.data.token);
       }
 

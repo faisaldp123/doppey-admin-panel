@@ -39,7 +39,7 @@ export default function ProductsPage() {
   useEffect(() => {
     if (isLoading) return;
 
-    const token = localStorage.getItem("adminToken");
+    const token = localStorage.getItem("token");
 
     if (!token) {
       router.push("/admin-login");
