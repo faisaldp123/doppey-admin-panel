@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -15,15 +16,29 @@ import {
   DialogActions,
 } from "@mui/material";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", slug: "" });
-  const token = localStorage.getItem("token");
+  const [token, setToken] = useState(null);
+
+  // ✅ Get token safely (browser only)
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const t = localStorage.getItem("token");
+      setToken(t);
+    }
+  }, []);
 
   const fetchCategories = async () => {
-    const res = await axios.get("http://localhost:5000/api/categories");
-    setCategories(res.data);
+    try {
+      const res = await axios.get(`${API_URL}/api/categories`);
+      setCategories(res.data);
+    } catch (err) {
+      console.error("Fetch categories failed", err);
+    }
   };
 
   useEffect(() => {
@@ -31,11 +46,23 @@ export default function CategoriesPage() {
   }, []);
 
   const handleAdd = async () => {
-    await axios.post("http://localhost:5000/api/categories", form, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setOpen(false);
-    fetchCategories();
+    if (!token) {
+      alert("Unauthorized");
+      return;
+    }
+
+    try {
+      await axios.post(`${API_URL}/api/categories`, form, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setOpen(false);
+      setForm({ name: "", slug: "" });
+      fetchCategories();
+    } catch (err) {
+      console.error("Add category failed", err);
+    }
   };
 
   return (
@@ -55,16 +82,16 @@ export default function CategoriesPage() {
       <Table sx={{ mt: 2 }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ color: "#fff !important" }}>Name</TableCell>
-            <TableCell sx={{ color: "#fff !important" }}>Slug</TableCell>
+            <TableCell sx={{ color: "#fff" }}>Name</TableCell>
+            <TableCell sx={{ color: "#fff" }}>Slug</TableCell>
           </TableRow>
         </TableHead>
 
         <TableBody>
           {categories.map((c) => (
             <TableRow key={c._id}>
-              <TableCell sx={{ color: "#fff !important" }}>{c.name}</TableCell>
-              <TableCell sx={{ color: "#fff !important" }}>{c.slug}</TableCell>
+              <TableCell sx={{ color: "#fff" }}>{c.name}</TableCell>
+              <TableCell sx={{ color: "#fff" }}>{c.slug}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -74,10 +101,7 @@ export default function CategoriesPage() {
         open={open}
         onClose={() => setOpen(false)}
         PaperProps={{
-          sx: {
-            backgroundColor: "#111",
-            color: "#fff",
-          },
+          sx: { backgroundColor: "#111", color: "#fff" },
         }}
       >
         <DialogContent>
@@ -87,7 +111,10 @@ export default function CategoriesPage() {
             sx={{ mb: 2 }}
             InputLabelProps={{ style: { color: "#aaa" } }}
             InputProps={{ style: { color: "#fff" } }}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
+            value={form.name}
+            onChange={(e) =>
+              setForm({ ...form, name: e.target.value })
+            }
           />
 
           <TextField
@@ -95,7 +122,10 @@ export default function CategoriesPage() {
             fullWidth
             InputLabelProps={{ style: { color: "#aaa" } }}
             InputProps={{ style: { color: "#fff" } }}
-            onChange={(e) => setForm({ ...form, slug: e.target.value })}
+            value={form.slug}
+            onChange={(e) =>
+              setForm({ ...form, slug: e.target.value })
+            }
           />
         </DialogContent>
 
