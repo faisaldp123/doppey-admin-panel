@@ -27,6 +27,8 @@ export default function OrdersPage() {
 
   // ✅ Fetch orders once token is available
   useEffect(() => {
+    console.log(token,"token");
+    
     if (!token) return;
 
     const fetchOrders = async () => {
