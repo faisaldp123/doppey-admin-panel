@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -18,10 +19,12 @@ import {
 import { useRouter } from "next/navigation";
 import useAdminAuth from "../hooks/useAdminAuth";
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function ProductsPage() {
   const router = useRouter();
 
-  // Check admin authentication (same hook used in dashboard)
+  // Admin auth check
   const isLoading = useAdminAuth();
 
   const [products, setProducts] = useState([]);
@@ -35,12 +38,13 @@ export default function ProductsPage() {
     image: null,
   });
 
-  // Fetch products AFTER admin is authenticated
+  // 🔹 Fetch products
   useEffect(() => {
     if (isLoading) return;
 
-    const token = localStorage.getItem("token");
+    if (typeof window === "undefined") return;
 
+    const token = localStorage.getItem("token");
     if (!token) {
       router.push("/admin-login");
       return;
@@ -48,13 +52,14 @@ export default function ProductsPage() {
 
     const fetchProducts = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/products", {
-          headers: { Authorization: `Bearer ${token}` },
+        const res = await axios.get(`${API_URL}/api/products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-
         setProducts(res.data);
       } catch (err) {
-        console.log("Fetch Error:", err.response?.data);
+        console.error("Fetch products failed", err.response?.data);
         router.push("/admin-login");
       }
     };
@@ -62,9 +67,9 @@ export default function ProductsPage() {
     fetchProducts();
   }, [isLoading, router]);
 
-  // Add Product
+  // 🔹 Add Product
   const handleAdd = async () => {
-    const token = localStorage.getItem("adminToken");
+    const token = localStorage.getItem("token");
     if (!token) return router.push("/admin-login");
 
     try {
@@ -75,35 +80,42 @@ export default function ProductsPage() {
       formData.append("subCategory", form.subCategory);
       formData.append("image", form.image);
 
-      await axios.post("http://localhost:5000/api/products", formData, {
+      await axios.post(`${API_URL}/api/products`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
 
       alert("Product Added Successfully!");
       setOpen(false);
-      window.location.reload();
+
+      // Refresh list without full reload
+      const res = await axios.get(`${API_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(res.data);
     } catch (err) {
       alert("Error Adding Product");
-      console.log(err);
+      console.error(err.response?.data || err.message);
     }
   };
 
-  // Delete Product
+  // 🔹 Delete Product
   const handleDelete = async (id) => {
-    const token = localStorage.getItem("adminToken");
+    const token = localStorage.getItem("token");
     if (!token) return router.push("/admin-login");
 
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
+      await axios.delete(`${API_URL}/api/products/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
-      window.location.reload();
+      setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
-      alert("Error deleting");
+      alert("Error deleting product");
+      console.error(err.response?.data || err.message);
     }
   };
 
@@ -147,7 +159,7 @@ export default function ProductsPage() {
         </TableBody>
       </Table>
 
-      {/* Add Product Modal */}
+      {/* Add Product Dialog */}
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogContent sx={{ background: "#000" }}>
           <TextField
@@ -174,15 +186,11 @@ export default function ProductsPage() {
             fullWidth
             sx={{ mb: 2 }}
             InputLabelProps={{ style: { color: "white" } }}
-            SelectProps={{
-              MenuProps: { PaperProps: { sx: { background: "#111", color: "white" } } },
-            }}
-            inputProps={{ style: { color: "white" } }}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           >
-            <MenuItem sx={{ color: "white" }} value="mens">Men</MenuItem>
-            <MenuItem sx={{ color: "white" }} value="womens">Women</MenuItem>
-            <MenuItem sx={{ color: "white" }} value="kids">Kids</MenuItem>
+            <MenuItem value="mens">Men</MenuItem>
+            <MenuItem value="womens">Women</MenuItem>
+            <MenuItem value="kids">Kids</MenuItem>
           </TextField>
 
           <TextField
@@ -191,22 +199,20 @@ export default function ProductsPage() {
             fullWidth
             sx={{ mb: 2 }}
             InputLabelProps={{ style: { color: "white" } }}
-            SelectProps={{
-              MenuProps: { PaperProps: { sx: { background: "#111", color: "white" } } },
-            }}
-            inputProps={{ style: { color: "white" } }}
             onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
           >
-            <MenuItem sx={{ color: "white" }} value="winter">Winter</MenuItem>
-            <MenuItem sx={{ color: "white" }} value="summer">Summer</MenuItem>
-            <MenuItem sx={{ color: "white" }} value="casual">Casual</MenuItem>
+            <MenuItem value="winter">Winter</MenuItem>
+            <MenuItem value="summer">Summer</MenuItem>
+            <MenuItem value="casual">Casual</MenuItem>
           </TextField>
 
           <input
             type="file"
             accept="image/*"
-            style={{ color: "white", marginBottom: "10px" }}
-            onChange={(e) => setForm({ ...form, image: e.target.files[0] })}
+            style={{ color: "white" }}
+            onChange={(e) =>
+              setForm({ ...form, image: e.target.files[0] })
+            }
           />
         </DialogContent>
 
