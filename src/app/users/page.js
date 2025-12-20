@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { useRouter } from "next/navigation";
+import api from "@/lib/axios"; // ✅ USE AXIOS INSTANCE
 import {
   Box,
   Typography,
@@ -18,38 +18,34 @@ export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      router.push("/admin-login");
-      return;
-    }
-
-    try {
-      const res = await axios.get("http://localhost:5000/api/users", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setUsers(res.data);
-      setLoading(false);
-    } catch (err) {
-      router.push("/admin-login");
-    }
-  };
-
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await api.get("/api/users"); // ✅ NO localhost
+        setUsers(res.data);
+      } catch (err) {
+        console.error("Users fetch error:", err.response?.status);
+
+        // 🔐 Redirect ONLY if token invalid
+        if (err.response?.status === 401) {
+          localStorage.removeItem("token");
+          router.push("/admin-login");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchUsers();
   }, []);
 
-  if (loading)
+  if (loading) {
     return (
       <Box sx={{ textAlign: "center", mt: 10 }}>
         <CircularProgress />
       </Box>
     );
+  }
 
   return (
     <Box sx={{ padding: "20px" }}>
@@ -61,8 +57,8 @@ export default function UsersPage() {
         <TableHead>
           <TableRow>
             <TableCell sx={{ color: "white" }}>User ID</TableCell>
-            <TableCell sx={{ color: "white" }}>Name</TableCell>
-            <TableCell sx={{ color: "white" }}>Email</TableCell>
+            <TableCell sx={{ color: "white" }}>Phone</TableCell>
+            <TableCell sx={{ color: "white" }}>Role</TableCell>
             <TableCell sx={{ color: "white" }}>Created</TableCell>
           </TableRow>
         </TableHead>
@@ -71,8 +67,8 @@ export default function UsersPage() {
           {users.map((u) => (
             <TableRow key={u._id}>
               <TableCell sx={{ color: "white" }}>{u._id}</TableCell>
-              <TableCell sx={{ color: "white" }}>{u.name}</TableCell>
-              <TableCell sx={{ color: "white" }}>{u.email}</TableCell>
+              <TableCell sx={{ color: "white" }}>{u.phone}</TableCell>
+              <TableCell sx={{ color: "white" }}>{u.role}</TableCell>
               <TableCell sx={{ color: "white" }}>
                 {new Date(u.createdAt).toLocaleString()}
               </TableCell>

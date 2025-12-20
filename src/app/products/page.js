@@ -12,10 +12,16 @@ import {
   TableRow,
   Dialog,
   DialogContent,
-  TextField,
   DialogActions,
+  TextField,
   MenuItem,
+  Stack,
+  CircularProgress,
+  IconButton,
+  Switch,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { useRouter } from "next/navigation";
 import useAdminAuth from "../hooks/useAdminAuth";
 
@@ -23,107 +29,185 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function ProductsPage() {
   const router = useRouter();
-
-  // Admin auth check
   const isLoading = useAdminAuth();
 
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+
   const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const [previewImages, setPreviewImages] = useState([]);
 
   const [form, setForm] = useState({
     name: "",
+    description: "",
     price: "",
+    stock: "",
     category: "",
     subCategory: "",
-    image: null,
+    isActive: true,
+    images: [],
   });
 
-  // 🔹 Fetch products
+  /* ================= FETCH META ================= */
+
+  useEffect(() => {
+    const fetchMeta = async () => {
+      const [cat, sub] = await Promise.all([
+        axios.get(`${API_URL}/api/categories`),
+        axios.get(`${API_URL}/api/subcategories`),
+      ]);
+      setCategories(cat.data);
+      setSubCategories(sub.data);
+    };
+    fetchMeta();
+  }, []);
+
+  /* ================= FETCH PRODUCTS ================= */
+
   useEffect(() => {
     if (isLoading) return;
 
-    if (typeof window === "undefined") return;
-
     const token = localStorage.getItem("token");
-    if (!token) {
-      router.push("/admin-login");
-      return;
-    }
+    if (!token) return router.push("/admin-login");
 
     const fetchProducts = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/products`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setProducts(res.data);
-      } catch (err) {
-        console.error("Fetch products failed", err.response?.data);
-        router.push("/admin-login");
-      }
+      setLoading(true);
+      const res = await axios.get(`${API_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setProducts(res.data);
+      setLoading(false);
     };
 
     fetchProducts();
   }, [isLoading, router]);
 
-  // 🔹 Add Product
-  const handleAdd = async () => {
+  /* ================= IMAGE HANDLING ================= */
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      alert("You can upload only 5 images");
+      return;
+    }
+
+    setForm({ ...form, images: files });
+    setPreviewImages(files.map((f) => URL.createObjectURL(f)));
+  };
+
+  /* ================= SUBMIT ================= */
+
+  const handleSubmit = async () => {
     const token = localStorage.getItem("token");
     if (!token) return router.push("/admin-login");
 
-    try {
-      const formData = new FormData();
-      formData.append("name", form.name);
-      formData.append("price", form.price);
-      formData.append("category", form.category);
-      formData.append("subCategory", form.subCategory);
-      formData.append("image", form.image);
+    if (
+      !form.name ||
+      !form.description ||
+      !form.price ||
+      !form.stock ||
+      !form.category ||
+      !form.subCategory
+    ) {
+      return alert("All fields are required");
+    }
 
-      await axios.post(`${API_URL}/api/products`, formData, {
+    if (!editId && form.images.length < 5) {
+      return alert("Minimum 5 images required");
+    }
+
+    const formData = new FormData();
+
+    formData.append("name", form.name);
+    formData.append("description", form.description);
+    formData.append("price", form.price);
+    formData.append("stock", form.stock);
+    formData.append("category", form.category);
+    formData.append("subCategory", form.subCategory);
+    formData.append("isActive", form.isActive);
+
+    form.images.forEach((img) => formData.append("images", img));
+
+    try {
+      const url = editId
+        ? `${API_URL}/api/products/${editId}`
+        : `${API_URL}/api/products`;
+
+      const method = editId ? axios.put : axios.post;
+
+      await method(url, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      alert("Product Added Successfully!");
       setOpen(false);
+      setEditId(null);
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        subCategory: "",
+        isActive: true,
+        images: [],
+      });
+      setPreviewImages([]);
 
-      // Refresh list without full reload
-      const res = await axios.get(`${API_URL}/api/products`, {
+      const refreshed = await axios.get(`${API_URL}/api/products`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setProducts(res.data);
+      setProducts(refreshed.data);
     } catch (err) {
-      alert("Error Adding Product");
-      console.error(err.response?.data || err.message);
+      alert(err.response?.data?.message || "Product save failed");
     }
   };
 
-  // 🔹 Delete Product
+  /* ================= DELETE ================= */
+
   const handleDelete = async (id) => {
+    if (!confirm("Delete this product?")) return;
+
     const token = localStorage.getItem("token");
-    if (!token) return router.push("/admin-login");
+    await axios.delete(`${API_URL}/api/products/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-    try {
-      await axios.delete(`${API_URL}/api/products/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      setProducts((prev) => prev.filter((p) => p._id !== id));
-    } catch (err) {
-      alert("Error deleting product");
-      console.error(err.response?.data || err.message);
-    }
+    setProducts((prev) => prev.filter((p) => p._id !== id));
   };
 
-  if (isLoading) return null;
+  /* ================= EDIT ================= */
+
+  const handleEdit = (p) => {
+    setEditId(p._id);
+    setForm({
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      category: p.category?._id,
+      subCategory: p.subCategory?._id,
+      isActive: p.isActive,
+      images: [],
+    });
+    setPreviewImages([]);
+    setOpen(true);
+  };
+
+  if (loading || isLoading) return <CircularProgress />;
+
+  /* ================= UI ================= */
 
   return (
     <>
-      <Typography variant="h4" gutterBottom sx={{ color: "white" }}>
+      <Typography variant="h4" sx={{ color: "white", mb: 2 }}>
         Products
       </Typography>
 
@@ -134,92 +218,128 @@ export default function ProductsPage() {
       <Table sx={{ mt: 2 }}>
         <TableHead>
           <TableRow>
-            <TableCell sx={{ color: "white" }}>Name</TableCell>
-            <TableCell sx={{ color: "white" }}>Price</TableCell>
-            <TableCell sx={{ color: "white" }}>Category</TableCell>
-            <TableCell sx={{ color: "white" }}>Subcategory</TableCell>
-            <TableCell sx={{ color: "white" }}>Actions</TableCell>
+            {["Name", "Price", "Stock", "Status", "Actions"].map((h) => (
+              <TableCell key={h} sx={{ color: "white" }}>
+                {h}
+              </TableCell>
+            ))}
           </TableRow>
         </TableHead>
-
         <TableBody>
           {products.map((p) => (
             <TableRow key={p._id}>
               <TableCell sx={{ color: "white" }}>{p.name}</TableCell>
               <TableCell sx={{ color: "white" }}>₹{p.price}</TableCell>
-              <TableCell sx={{ color: "white" }}>{p.category}</TableCell>
-              <TableCell sx={{ color: "white" }}>{p.subCategory}</TableCell>
+              <TableCell sx={{ color: "white" }}>{p.stock}</TableCell>
+              <TableCell sx={{ color: "white" }}>
+                {p.isActive ? "Active" : "Inactive"}
+              </TableCell>
               <TableCell>
-                <Button color="error" onClick={() => handleDelete(p._id)}>
-                  Delete
-                </Button>
+                <IconButton onClick={() => handleEdit(p)} color="primary">
+                  <EditIcon />
+                </IconButton>
+                <IconButton onClick={() => handleDelete(p._id)} color="error">
+                  <DeleteIcon />
+                </IconButton>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      {/* Add Product Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)}>
+      {/* ================= MODAL ================= */}
+
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
         <DialogContent sx={{ background: "#000" }}>
-          <TextField
-            label="Name"
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ style: { color: "white" } }}
-            inputProps={{ style: { color: "white" } }}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
+          <Stack spacing={2}>
+            {["name", "description", "price", "stock"].map((f) => (
+              <TextField
+                key={f}
+                label={f.toUpperCase()}
+                value={form[f]}
+                onChange={(e) => setForm({ ...form, [f]: e.target.value })}
+                InputLabelProps={{ sx: { color: "white" } }}
+                inputProps={{ sx: { color: "white" } }}
+                multiline={f === "description"}
+              />
+            ))}
 
-          <TextField
-            label="Price"
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ style: { color: "white" } }}
-            inputProps={{ style: { color: "white" } }}
-            onChange={(e) => setForm({ ...form, price: e.target.value })}
-          />
+            <TextField
+              select
+              label="Category"
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              InputLabelProps={{ sx: { color: "white" } }}
+              SelectProps={{ sx: { color: "white" } }}
+            >
+              {categories.map((c) => (
+                <MenuItem key={c._id} value={c._id}>
+                  {c.name}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <TextField
-            select
-            label="Category"
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ style: { color: "white" } }}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
-          >
-            <MenuItem value="mens">Men</MenuItem>
-            <MenuItem value="womens">Women</MenuItem>
-            <MenuItem value="kids">Kids</MenuItem>
-          </TextField>
+            <TextField
+              select
+              label="SubCategory"
+              value={form.subCategory}
+              onChange={(e) =>
+                setForm({ ...form, subCategory: e.target.value })
+              }
+              InputLabelProps={{ sx: { color: "white" } }}
+              SelectProps={{ sx: { color: "white" } }}
+            >
+              {subCategories.map((s) => (
+                <MenuItem key={s._id} value={s._id}>
+                  {s.name}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <TextField
-            select
-            label="Sub Category"
-            fullWidth
-            sx={{ mb: 2 }}
-            InputLabelProps={{ style: { color: "white" } }}
-            onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
-          >
-            <MenuItem value="winter">Winter</MenuItem>
-            <MenuItem value="summer">Summer</MenuItem>
-            <MenuItem value="casual">Casual</MenuItem>
-          </TextField>
+            <Stack direction="row" alignItems="center">
+              <Typography sx={{ color: "white" }}>Active</Typography>
+              <Switch
+                checked={form.isActive}
+                onChange={(e) =>
+                  setForm({ ...form, isActive: e.target.checked })
+                }
+              />
+            </Stack>
 
-          <input
-            type="file"
-            accept="image/*"
-            style={{ color: "white" }}
-            onChange={(e) =>
-              setForm({ ...form, image: e.target.files[0] })
-            }
-          />
+            <Typography sx={{ color: "white" }}>
+              Upload Images (5 required)
+            </Typography>
+
+            <input type="file" multiple accept="image/*" onChange={handleImageChange} />
+
+            <Typography
+              sx={{
+                color:
+                  !editId && form.images.length < 5 ? "red" : "lightgreen",
+                fontSize: 13,
+              }}
+            >
+              {form.images.length} / 5 images selected
+            </Typography>
+
+            <Stack direction="row" spacing={1}>
+              {previewImages.map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  width={60}
+                  height={60}
+                  style={{ objectFit: "cover", borderRadius: 6 }}
+                />
+              ))}
+            </Stack>
+          </Stack>
         </DialogContent>
 
         <DialogActions sx={{ background: "#000" }}>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleAdd}>
-            Add
+          <Button variant="contained" onClick={handleSubmit}>
+            {editId ? "Update" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
