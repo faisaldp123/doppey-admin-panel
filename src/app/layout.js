@@ -85,6 +85,7 @@ export default function RootLayout({ children }) {
                     { href: "/admin", label: "Dashboard", icon: <DashboardIcon /> },
                     { href: "/products", label: "Products", icon: <InventoryIcon /> },
                     { href: "/categories", label: "Categories", icon: <CategoryIcon /> },
+                    { href: "/sub-categories", label: "subCategory", icon: <CategoryIcon /> },
                     { href: "/orders", label: "Orders", icon: <ShoppingCartIcon /> },
                     { href: "/users", label: "Users", icon: <PeopleIcon /> },
                   ].map((item) => (
