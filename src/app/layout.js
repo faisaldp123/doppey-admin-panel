@@ -14,25 +14,33 @@ import {
   ListItemIcon,
   ListItemButton,
   Button,
+  IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import PeopleIcon from "@mui/icons-material/People";
 import CategoryIcon from "@mui/icons-material/Category";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import MenuIcon from "@mui/icons-material/Menu";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const drawerWidth = 240;
+const collapsedWidth = 70;
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isMobile = useMediaQuery("(max-width:900px)");
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Check admin login
   useEffect(() => {
     const token = localStorage.getItem("token");
 
@@ -40,14 +48,12 @@ export default function RootLayout({ children }) {
       setIsLoggedIn(true);
     } else {
       setIsLoggedIn(false);
-      // Redirect if trying to access admin protected pages
       if (pathname !== "/admin-login") {
         router.push("/admin-login");
       }
     }
   }, [pathname]);
 
-  // Hide sidebar & navbar on login page
   if (pathname === "/admin-login") {
     return (
       <html lang="en">
@@ -56,69 +62,80 @@ export default function RootLayout({ children }) {
     );
   }
 
+  const menuItems = [
+    { href: "/admin", label: "Dashboard", icon: <DashboardIcon /> },
+    { href: "/products", label: "Products", icon: <InventoryIcon /> },
+    { href: "/categories", label: "Categories", icon: <CategoryIcon /> },
+    { href: "/sub-categories", label: "Sub Categories", icon: <AccountTreeIcon /> },
+    { href: "/coupon", label: "Coupons", icon: <LocalOfferIcon /> },
+    { href: "/orders", label: "Orders", icon: <ShoppingCartIcon /> },
+    { href: "/users", label: "Users", icon: <PeopleIcon /> },
+  ];
+
+  const drawerContent = (
+    <Box>
+      <Toolbar />
+      <List>
+        {menuItems.map((item) => (
+          <ListItem key={item.href} disablePadding>
+            <Link href={item.href} passHref legacyBehavior>
+              <ListItemButton component="a" sx={{ justifyContent: isMobile ? "center" : "flex-start" }}>
+                <ListItemIcon sx={{ color: "#fff", minWidth: isMobile ? "auto" : 40 }}>
+                  {item.icon}
+                </ListItemIcon>
+                {!isMobile && <ListItemText primary={item.label} />}
+              </ListItemButton>
+            </Link>
+          </ListItem>
+        ))}
+      </List>
+    </Box>
+  );
+
   return (
     <html lang="en">
       <body>
         <Box sx={{ display: "flex", bgcolor: "#000", minHeight: "100vh" }}>
           <CssBaseline />
 
-          {/* ✅ LEFT SIDEBAR (Only if logged in) */}
+          {/* SIDEBAR */}
           {isLoggedIn && (
             <Drawer
+              variant={isMobile ? "temporary" : "permanent"}
+              open={isMobile ? mobileOpen : true}
+              onClose={() => setMobileOpen(false)}
               sx={{
-                width: drawerWidth,
-                flexShrink: 0,
+                width: isMobile ? collapsedWidth : drawerWidth,
                 "& .MuiDrawer-paper": {
-                  width: drawerWidth,
-                  boxSizing: "border-box",
+                  width: isMobile ? collapsedWidth : drawerWidth,
                   bgcolor: "#111",
                   color: "#fff",
                 },
               }}
-              variant="permanent"
-              anchor="left"
             >
-              <Toolbar />
-              <Box sx={{ overflow: "auto" }}>
-                <List>
-                  {[
-                    { href: "/admin", label: "Dashboard", icon: <DashboardIcon /> },
-                    { href: "/products", label: "Products", icon: <InventoryIcon /> },
-                    { href: "/categories", label: "Categories", icon: <CategoryIcon /> },
-                    { href: "/sub-categories", label: "subCategory", icon: <CategoryIcon /> },
-                    { href: "/orders", label: "Orders", icon: <ShoppingCartIcon /> },
-                    { href: "/users", label: "Users", icon: <PeopleIcon /> },
-                  ].map((item) => (
-                    <ListItem key={item.href} disablePadding>
-                      <Link href={item.href} passHref legacyBehavior>
-                        <ListItemButton component="a">
-                          <ListItemIcon sx={{ color: "#fff" }}>
-                            {item.icon}
-                          </ListItemIcon>
-                          <ListItemText primary={item.label} />
-                        </ListItemButton>
-                      </Link>
-                    </ListItem>
-                  ))}
-                </List>
-              </Box>
+              {drawerContent}
             </Drawer>
           )}
 
-          {/* ✅ TOP NAVBAR (Only if logged in) */}
+          {/* TOP BAR */}
           {isLoggedIn && (
             <AppBar
               position="fixed"
               sx={{
-                width: `calc(100% - ${drawerWidth}px)`,
-                ml: `${drawerWidth}px`,
+                width: `calc(100% - ${isMobile ? collapsedWidth : drawerWidth}px)`,
+                ml: `${isMobile ? collapsedWidth : drawerWidth}px`,
                 bgcolor: "#1e1e2f",
               }}
             >
-              <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="h6" noWrap>
-                  Doppey Admin Panel
-                </Typography>
+              <Toolbar sx={{ justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  {isMobile && (
+                    <IconButton color="inherit" onClick={() => setMobileOpen(true)}>
+                      <MenuIcon />
+                    </IconButton>
+                  )}
+                  <Typography variant="h6">Doppey Admin Panel</Typography>
+                </Box>
 
                 <Button
                   color="error"
@@ -140,7 +157,7 @@ export default function RootLayout({ children }) {
             sx={{
               flexGrow: 1,
               p: 3,
-              color: "#fff",
+              width: "100%",
             }}
           >
             {isLoggedIn && <Toolbar />}
