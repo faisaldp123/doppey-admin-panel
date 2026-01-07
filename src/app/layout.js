@@ -17,6 +17,7 @@ import {
   IconButton,
   useMediaQuery,
 } from "@mui/material";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import PeopleIcon from "@mui/icons-material/People";
@@ -25,6 +26,10 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import MenuIcon from "@mui/icons-material/Menu";
+import StoreIcon from "@mui/icons-material/Store";
+import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
+import WarehouseIcon from "@mui/icons-material/Warehouse";
+import PaymentsIcon from "@mui/icons-material/Payments";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -64,11 +69,25 @@ export default function RootLayout({ children }) {
 
   const menuItems = [
     { href: "/admin", label: "Dashboard", icon: <DashboardIcon /> },
+
+    // CATALOG
     { href: "/products", label: "Products", icon: <InventoryIcon /> },
     { href: "/categories", label: "Categories", icon: <CategoryIcon /> },
     { href: "/sub-categories", label: "Sub Categories", icon: <AccountTreeIcon /> },
-    { href: "/coupon", label: "Coupons", icon: <LocalOfferIcon /> },
+
+    // INVENTORY & WAREHOUSE
+    { href: "/inventory", label: "Inventory", icon: <StoreIcon /> },
+    { href: "/warehouse", label: "Warehouse", icon: <WarehouseIcon /> },
+
+    // ORDERS & RETURNS
     { href: "/orders", label: "Orders", icon: <ShoppingCartIcon /> },
+    { href: "/returns", label: "Returns / RTO", icon: <AssignmentReturnIcon /> },
+
+    // OFFERS & PAYMENTS
+    { href: "/coupon", label: "Coupons", icon: <LocalOfferIcon /> },
+    { href: "/payments", label: "Payments", icon: <PaymentsIcon /> },
+
+    // USERS
     { href: "/users", label: "Users", icon: <PeopleIcon /> },
   ];
 
@@ -79,8 +98,22 @@ export default function RootLayout({ children }) {
         {menuItems.map((item) => (
           <ListItem key={item.href} disablePadding>
             <Link href={item.href} passHref legacyBehavior>
-              <ListItemButton component="a" sx={{ justifyContent: isMobile ? "center" : "flex-start" }}>
-                <ListItemIcon sx={{ color: "#fff", minWidth: isMobile ? "auto" : 40 }}>
+              <ListItemButton
+                component="a"
+                sx={{
+                  justifyContent: isMobile ? "center" : "flex-start",
+                  bgcolor: pathname === item.href ? "#2e2e42" : "transparent",
+                  "&:hover": {
+                    bgcolor: "#2e2e42",
+                  },
+                }}
+              >
+                <ListItemIcon
+                  sx={{
+                    color: "#fff",
+                    minWidth: isMobile ? "auto" : 40,
+                  }}
+                >
                   {item.icon}
                 </ListItemIcon>
                 {!isMobile && <ListItemText primary={item.label} />}
@@ -110,6 +143,7 @@ export default function RootLayout({ children }) {
                   width: isMobile ? collapsedWidth : drawerWidth,
                   bgcolor: "#111",
                   color: "#fff",
+                  borderRight: "1px solid #222",
                 },
               }}
             >
@@ -125,6 +159,8 @@ export default function RootLayout({ children }) {
                 width: `calc(100% - ${isMobile ? collapsedWidth : drawerWidth}px)`,
                 ml: `${isMobile ? collapsedWidth : drawerWidth}px`,
                 bgcolor: "#1e1e2f",
+                boxShadow: "none",
+                borderBottom: "1px solid #2e2e42",
               }}
             >
               <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -134,7 +170,9 @@ export default function RootLayout({ children }) {
                       <MenuIcon />
                     </IconButton>
                   )}
-                  <Typography variant="h6">Doppey Admin Panel</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    Doppey Admin Panel
+                  </Typography>
                 </Box>
 
                 <Button
@@ -158,6 +196,8 @@ export default function RootLayout({ children }) {
               flexGrow: 1,
               p: 3,
               width: "100%",
+              bgcolor: "#0f0f1a",
+              minHeight: "100vh",
             }}
           >
             {isLoggedIn && <Toolbar />}
