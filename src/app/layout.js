@@ -68,7 +68,7 @@ export default function RootLayout({ children }) {
   }
 
   const menuItems = [
-    { href: "/admin", label: "Dashboard", icon: <DashboardIcon /> },
+    { href: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
 
     // CATALOG
     { href: "/products", label: "Products", icon: <InventoryIcon /> },
