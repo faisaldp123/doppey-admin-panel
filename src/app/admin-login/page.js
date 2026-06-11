@@ -47,7 +47,7 @@ export default function AdminLogin() {
       const res = await axios.post(
         `${API_URL}/api/admin/login`,
         { password },
-        { timeout: 10000 }
+        { timeout: 100000 }
       );
 
       localStorage.setItem("token", res.data.token);
