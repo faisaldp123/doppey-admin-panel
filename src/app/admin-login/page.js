@@ -30,7 +30,7 @@ export default function AdminLogin() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token === "admin-secret-token") {
-      router.push("/admin");
+      router.push("/dashboard");
     }
   }, []);
 

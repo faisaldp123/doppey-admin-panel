@@ -30,6 +30,7 @@ import StoreIcon from "@mui/icons-material/Store";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
 import PaymentsIcon from "@mui/icons-material/Payments";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel"; // ← ADD THIS
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -48,7 +49,6 @@ export default function RootLayout({ children }) {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
     if (token === "admin-secret-token") {
       setIsLoggedIn(true);
     } else {
@@ -68,27 +68,18 @@ export default function RootLayout({ children }) {
   }
 
   const menuItems = [
-    { href: "/dashboard", label: "Dashboard", icon: <DashboardIcon /> },
-
-    // CATALOG
-    { href: "/products", label: "Products", icon: <InventoryIcon /> },
-    { href: "/categories", label: "Categories", icon: <CategoryIcon /> },
-    { href: "/sub-categories", label: "Sub Categories", icon: <AccountTreeIcon /> },
-
-    // INVENTORY & WAREHOUSE
-    { href: "/inventory", label: "Inventory", icon: <StoreIcon /> },
-    { href: "/warehouse", label: "Warehouse", icon: <WarehouseIcon /> },
-
-    // ORDERS & RETURNS
-    { href: "/orders", label: "Orders", icon: <ShoppingCartIcon /> },
-    { href: "/returns", label: "Returns / RTO", icon: <AssignmentReturnIcon /> },
-
-    // OFFERS & PAYMENTS
-    { href: "/coupon", label: "Coupons", icon: <LocalOfferIcon /> },
-    { href: "/payments", label: "Payments", icon: <PaymentsIcon /> },
-
-    // USERS
-    { href: "/users", label: "Users", icon: <PeopleIcon /> },
+    { href: "/dashboard",       label: "Dashboard",      icon: <DashboardIcon /> },
+    { href: "/products",        label: "Products",       icon: <InventoryIcon /> },
+    { href: "/categories",      label: "Categories",     icon: <CategoryIcon /> },
+    { href: "/sub-categories",  label: "Sub Categories", icon: <AccountTreeIcon /> },
+    { href: "/banners",         label: "Banners",        icon: <ViewCarouselIcon /> }, // ← ADD THIS
+    { href: "/inventory",       label: "Inventory",      icon: <StoreIcon /> },
+    { href: "/warehouse",       label: "Warehouse",      icon: <WarehouseIcon /> },
+    { href: "/orders",          label: "Orders",         icon: <ShoppingCartIcon /> },
+    { href: "/returns",         label: "Returns / RTO",  icon: <AssignmentReturnIcon /> },
+    { href: "/coupon",          label: "Coupons",        icon: <LocalOfferIcon /> },
+    { href: "/payments",        label: "Payments",       icon: <PaymentsIcon /> },
+    { href: "/users",           label: "Users",          icon: <PeopleIcon /> },
   ];
 
   const drawerContent = (
@@ -103,17 +94,10 @@ export default function RootLayout({ children }) {
                 sx={{
                   justifyContent: isMobile ? "center" : "flex-start",
                   bgcolor: pathname === item.href ? "#2e2e42" : "transparent",
-                  "&:hover": {
-                    bgcolor: "#2e2e42",
-                  },
+                  "&:hover": { bgcolor: "#2e2e42" },
                 }}
               >
-                <ListItemIcon
-                  sx={{
-                    color: "#fff",
-                    minWidth: isMobile ? "auto" : 40,
-                  }}
-                >
+                <ListItemIcon sx={{ color: "#fff", minWidth: isMobile ? "auto" : 40 }}>
                   {item.icon}
                 </ListItemIcon>
                 {!isMobile && <ListItemText primary={item.label} />}
@@ -131,7 +115,6 @@ export default function RootLayout({ children }) {
         <Box sx={{ display: "flex", bgcolor: "#000", minHeight: "100vh" }}>
           <CssBaseline />
 
-          {/* SIDEBAR */}
           {isLoggedIn && (
             <Drawer
               variant={isMobile ? "temporary" : "permanent"}
@@ -151,7 +134,6 @@ export default function RootLayout({ children }) {
             </Drawer>
           )}
 
-          {/* TOP BAR */}
           {isLoggedIn && (
             <AppBar
               position="fixed"
@@ -174,7 +156,6 @@ export default function RootLayout({ children }) {
                     Doppey Admin Panel
                   </Typography>
                 </Box>
-
                 <Button
                   color="error"
                   variant="contained"
@@ -189,7 +170,6 @@ export default function RootLayout({ children }) {
             </AppBar>
           )}
 
-          {/* MAIN CONTENT */}
           <Box
             component="main"
             sx={{
