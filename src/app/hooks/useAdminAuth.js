@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
@@ -8,8 +9,8 @@ export default function useAdminAuth() {
   useEffect(() => {
     const token = localStorage.getItem("token");
 
-    if (!token || token !== "admin-secret-token") {
-      router.push("/admin-login");
+    if (!token) {
+      router.replace("/admin-login");
     }
-  }, []);
+  }, [router]);
 }

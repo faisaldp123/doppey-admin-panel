@@ -28,11 +28,12 @@ export default function AdminLogin() {
 
   // ✅ If already logged in, redirect to dashboard
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token === "admin-secret-token") {
-      router.push("/dashboard");
-    }
-  }, []);
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    router.replace("/dashboard");
+  }
+}, [router]);
 
   const handleLogin = async () => {
     if (!password) {

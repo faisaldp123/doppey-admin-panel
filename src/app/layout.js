@@ -174,6 +174,7 @@ export default function RootLayout({ children }) {
             component="main"
             sx={{
               flexGrow: 1,
+              minWidth: 0,
               p: 3,
               width: "100%",
               bgcolor: "#0f0f1a",

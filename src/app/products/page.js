@@ -33,6 +33,17 @@ import { useRouter } from "next/navigation";
 import useAdminAuth from "../hooks/useAdminAuth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' fill='%23222222'/%3E%3Cpath d='M20 55h40L48 39l-8 10-6-7z' fill='%23555'/%3E%3Ccircle cx='30' cy='28' r='6' fill='%23666'/%3E%3C/svg%3E";
+
+const getMediaUrl = (src) => {
+  if (!src) return PLACEHOLDER_IMAGE;
+  if (src.startsWith("http") || src.startsWith("blob:") || src.startsWith("data:")) {
+    return src;
+  }
+  if (src.startsWith("/")) return `${API_URL}${src}`;
+  return `${API_URL}/${src}`;
+};
 
 const AVAILABLE_SIZES  = ["XS", "S", "M", "L", "XL", "XXL"];
 const AVAILABLE_COLORS = ["Black", "White", "Blue", "Red", "Green", "Yellow", "Pink", "Grey", "Brown", "Navy"];
@@ -219,8 +230,8 @@ export default function ProductsPage() {
       shipping:     p.shipping          || EMPTY_FORM.shipping,
       care:         p.care              || EMPTY_FORM.care,
     });
-    setPreviewImages(p.images || []);
-    setPreviewVideo(p.video || "");
+    setPreviewImages((p.images || []).map(getMediaUrl));
+    setPreviewVideo(getMediaUrl(p.video));
     setOpen(true);
   };
 
@@ -236,7 +247,7 @@ export default function ProductsPage() {
 
   return (
     // ← Key fix: overflow hidden on wrapper so table scroll is contained
-    <Box sx={{ width: "100%", overflow: "hidden" }}>
+    <Box sx={{ width: "100%", minWidth: 0 }}>
 
       <Typography variant="h4" sx={{ color: "white", mb: 2 }}>
         Products
@@ -247,8 +258,18 @@ export default function ProductsPage() {
       </Button>
 
       {/* ← width:100% + overflowX:auto on the box wrapping the table */}
-      <Box sx={{ width: "100%", overflowX: "auto" }}>
-        <Table sx={{ minWidth: 1600, borderCollapse: "separate", borderSpacing: 0 }}>
+      <TableContainer
+        component={Paper}
+        sx={{
+          width: "100%",
+          maxWidth: "100%",
+          overflowX: "auto",
+          bgcolor: "#111",
+          border: "1px solid #222",
+          borderRadius: 2,
+        }}
+      >
+        <Table sx={{ minWidth: 1720, borderCollapse: "separate", borderSpacing: 0 }}>
           <TableHead>
             <TableRow sx={{ bgcolor: "#1a1a2e" }}>
               <TableCell sx={{ color: "white", whiteSpace: "nowrap", borderBottom: "1px solid #333" }}>Image</TableCell>
@@ -297,9 +318,10 @@ export default function ProductsPage() {
               >
                 <TableCell sx={{ borderBottom: "1px solid #222" }}>
                   <img
-                    src={p.images?.[0]}
+                    src={getMediaUrl(p.images?.[0])}
                     alt={p.name}
                     style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8 }}
+                    onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
                   />
                 </TableCell>
 
@@ -376,9 +398,10 @@ export default function ProductsPage() {
                     {p.images?.slice(0, 2).map((img, idx) => (
                       <img
                         key={idx}
-                        src={img}
+                        src={getMediaUrl(img)}
                         alt=""
                         style={{ width: 45, height: 45, objectFit: "cover", borderRadius: 6 }}
+                        onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
                       />
                     ))}
                     {p.images?.length > 2 && (
@@ -414,7 +437,7 @@ export default function ProductsPage() {
             ))}
           </TableBody>
         </Table>
-      </Box>
+      </TableContainer>
 
       {/* ================= MODAL ================= */}
       <Dialog open={open} onClose={handleCloseModal} fullWidth maxWidth="md">
@@ -538,7 +561,14 @@ export default function ProductsPage() {
 
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {previewImages.map((src, i) => (
-                <img key={i} src={src} width={70} height={70} style={{ objectFit: "cover", borderRadius: 6, border: "1px solid #333" }} />
+                <img
+                  key={i}
+                  src={getMediaUrl(src)}
+                  width={70}
+                  height={70}
+                  style={{ objectFit: "cover", borderRadius: 6, border: "1px solid #333" }}
+                  onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+                />
               ))}
             </Box>
 
