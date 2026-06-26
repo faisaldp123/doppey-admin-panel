@@ -89,6 +89,7 @@ export default function ProductsPage() {
   const [loading,       setLoading]       = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
   const [previewVideo,  setPreviewVideo]  = useState("");
+  const [customColor,   setCustomColor]   = useState("");
   const [form,          setForm]          = useState(EMPTY_FORM);
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
@@ -131,10 +132,26 @@ export default function ProductsPage() {
   }, [isLoading, router]);
 
   const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 4) { alert("Maximum 4 images allowed"); return; }
-    set("images", files);
-    setPreviewImages(files.map((f) => URL.createObjectURL(f)));
+    const files = Array.from(e.target.files).slice(0, Math.max(0, 5 - form.images.length));
+    if (!files.length) return;
+    const nextImages = [...form.images, ...files].slice(0, 5);
+    set("images", nextImages);
+    setPreviewImages((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))].slice(0, 5));
+    e.target.value = "";
+  };
+
+  const removeImageAt = (index) => {
+    set("images", form.images.filter((_, i) => i !== index));
+    setPreviewImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const addCustomColor = () => {
+    const color = customColor.trim();
+    if (!color) return;
+    if (!form.colors.some((item) => item.toLowerCase() === color.toLowerCase())) {
+      set("colors", [...form.colors, color]);
+    }
+    setCustomColor("");
   };
 
   const handleVideoChange = (e) => {
@@ -150,8 +167,8 @@ export default function ProductsPage() {
     if (!form.name || !form.description || !form.price || !form.stock || !form.category || !form.subCategory) {
       return alert("Name, description, price, stock, category and subcategory are required");
     }
-    if (!editId && (form.images.length < 1 || form.images.length > 4)) {
-      return alert("Upload 1 to 4 product images");
+    if (!editId && (form.images.length < 1 || form.images.length > 5)) {
+      return alert("Upload 1 to 5 product images");
     }
 
     const formData = new FormData();
@@ -239,6 +256,7 @@ export default function ProductsPage() {
     setOpen(false);
     setEditId(null);
     setForm(EMPTY_FORM);
+    setCustomColor("");
     setPreviewImages([]);
     setPreviewVideo("");
   };
@@ -502,7 +520,7 @@ export default function ProductsPage() {
 
             <Typography sx={{ color: "white", fontWeight: 600 }}>Colors</Typography>
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-              {AVAILABLE_COLORS.map((color) => (
+              {[...new Set([...AVAILABLE_COLORS, ...form.colors])].map((color) => (
                 <Chip
                   key={color} label={color}
                   onClick={() => toggleArrayItem("colors", color)}
@@ -512,6 +530,24 @@ export default function ProductsPage() {
                 />
               ))}
             </Box>
+            <Stack direction="row" spacing={1}>
+              <TextField
+                label="Add Custom Color"
+                value={customColor}
+                onChange={(e) => setCustomColor(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addCustomColor();
+                  }
+                }}
+                fullWidth
+                {...fieldProps}
+              />
+              <Button variant="outlined" onClick={addCustomColor} sx={{ color: "white", borderColor: "#555" }}>
+                Add
+              </Button>
+            </Stack>
 
             <Divider sx={{ borderColor: "#333" }} />
 
@@ -546,29 +582,39 @@ export default function ProductsPage() {
             <Divider sx={{ borderColor: "#333" }} />
 
             <Typography sx={{ color: "white", fontWeight: 600 }}>
-              Images {editId ? "(upload new to replace existing)" : "(1 to 4 required)"}
+              Images {editId ? "(upload new to replace existing)" : "(1 to 5 required)"}
             </Typography>
 
-            <input type="file" multiple accept="image/*" onChange={handleImageChange} style={{ color: "white" }} />
+            <input type="file" accept="image/*" onChange={handleImageChange} style={{ color: "white" }} />
 
             <Typography sx={{ color: !editId && form.images.length < 1 ? "tomato" : "lightgreen", fontSize: 13 }}>
               {form.images.length > 0
                 ? `${form.images.length} new image(s) selected`
                 : editId
                 ? "No new images — existing images will be kept"
-                : "0 / 4 images selected"}
+                : "0 / 5 images selected"}
             </Typography>
 
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
               {previewImages.map((src, i) => (
-                <img
-                  key={i}
-                  src={getMediaUrl(src)}
-                  width={70}
-                  height={70}
-                  style={{ objectFit: "cover", borderRadius: 6, border: "1px solid #333" }}
-                  onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
-                />
+                <Box key={i} sx={{ position: "relative" }}>
+                  <img
+                    src={getMediaUrl(src)}
+                    width={70}
+                    height={70}
+                    style={{ objectFit: "cover", borderRadius: 6, border: "1px solid #333" }}
+                    onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+                  />
+                  {form.images.length > 0 && (
+                    <IconButton
+                      size="small"
+                      onClick={() => removeImageAt(i)}
+                      sx={{ position: "absolute", top: -8, right: -8, bgcolor: "#111", color: "#ef4444" }}
+                    >
+                      <DeleteIcon fontSize="inherit" />
+                    </IconButton>
+                  )}
+                </Box>
               ))}
             </Box>
 

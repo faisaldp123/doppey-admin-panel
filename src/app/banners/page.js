@@ -16,10 +16,12 @@ const emptyForm = {
   order:         "0",
   isActive:      true,
   videoHref:     "/shop",
-  desktopImages: [],   // File[]
-  mobileImages:  [],   // File[]
-  desktopHrefs:  ["", "", "", ""],  // per-image links
-  mobileHrefs:   ["", "", "", ""],
+  desktopImages: [],
+  mobileImages:  [],
+  existingDesktopUrls: [],
+  existingMobileUrls: [],
+  desktopHrefs:  ["/shop"],
+  mobileHrefs:   ["/shop"],
   video:         null,
 };
 
@@ -61,6 +63,8 @@ export default function BannersPage() {
       videoHref:     banner.videoHref || "/shop",
       desktopImages: [],
       mobileImages:  [],
+      existingDesktopUrls: (banner.desktopImages || []).map((i) => i.url),
+      existingMobileUrls:  (banner.mobileImages  || []).map((i) => i.url),
       desktopHrefs:  (banner.desktopImages || []).map((i) => i.href || "/shop"),
       mobileHrefs:   (banner.mobileImages  || []).map((i) => i.href || "/shop"),
       video:         null,
@@ -81,17 +85,43 @@ export default function BannersPage() {
   };
 
   const handleImagesChange = (e, type) => {
-    const files = Array.from(e.target.files).slice(0, 4);
-    if (!files.length) return;
+    const existingKey = type === "desktopImages" ? "existingDesktopUrls" : "existingMobileUrls";
     const hrefKey = type === "desktopImages" ? "desktopHrefs" : "mobileHrefs";
+    const previewKey = type === "desktopImages" ? "desktop" : "mobile";
+    const availableSlots = 4 - ((form[existingKey]?.length || 0) + (form[type]?.length || 0));
+    const files = Array.from(e.target.files).slice(0, Math.max(0, availableSlots));
+    if (!files.length) return;
     setForm((p) => ({
       ...p,
-      [type]: files,
-      [hrefKey]: files.map((_, i) => p[hrefKey][i] || "/shop"),
+      [type]: [...p[type], ...files],
+      [hrefKey]: [...p[hrefKey], ...files.map(() => "/shop")].slice(0, 4),
     }));
     setPreviews((p) => ({
       ...p,
-      [type === "desktopImages" ? "desktop" : "mobile"]: files.map((f) => URL.createObjectURL(f)),
+      [previewKey]: [...p[previewKey], ...files.map((f) => URL.createObjectURL(f))].slice(0, 4),
+    }));
+    e.target.value = "";
+  };
+
+  const removeImage = (type, previewKey, hrefKey, index) => {
+    const existingKey = type === "desktopImages" ? "existingDesktopUrls" : "existingMobileUrls";
+    setForm((p) => {
+      const existing = [...p[existingKey]];
+      const files = [...p[type]];
+
+      if (index < existing.length) existing.splice(index, 1);
+      else files.splice(index - existing.length, 1);
+
+      return {
+        ...p,
+        [existingKey]: existing,
+        [type]: files,
+        [hrefKey]: p[hrefKey].filter((_, i) => i !== index),
+      };
+    });
+    setPreviews((p) => ({
+      ...p,
+      [previewKey]: p[previewKey].filter((_, i) => i !== index),
     }));
   };
 
@@ -120,8 +150,10 @@ export default function BannersPage() {
     data.append("order",         form.order);
     data.append("isActive",      String(form.isActive));
     data.append("videoHref",     form.videoHref);
-    data.append("desktopHrefs",  JSON.stringify(form.desktopHrefs.slice(0, form.desktopImages.length || previews.desktop.length)));
-    data.append("mobileHrefs",   JSON.stringify(form.mobileHrefs.slice(0, form.mobileImages.length || previews.mobile.length)));
+    data.append("desktopHrefs",  JSON.stringify(form.desktopHrefs.slice(0, previews.desktop.length)));
+    data.append("mobileHrefs",   JSON.stringify(form.mobileHrefs.slice(0, previews.mobile.length)));
+    data.append("existingDesktopUrls", JSON.stringify(form.existingDesktopUrls));
+    data.append("existingMobileUrls",  JSON.stringify(form.existingMobileUrls));
 
     form.desktopImages.forEach((file) => data.append("desktopImages", file));
     form.mobileImages.forEach((file)  => data.append("mobileImages",  file));
@@ -130,7 +162,7 @@ export default function BannersPage() {
     setSubmitting(true);
     try {
       if (editingId) {
-        await API.put(`/banners/${editingId}`, data);
+        await API.put(`/api/banners/${editingId}`, data);
       } else {
         await API.post("/api/banners", data);
       }
@@ -147,7 +179,7 @@ export default function BannersPage() {
   const handleDelete = async (id) => {
     if (!confirm("Delete this banner?")) return;
     try {
-      await API.delete(`/banners/${id}`);
+      await API.delete(`/api/banners/${id}`);
       fetchBanners();
     } catch (err) {
       alert("Failed to delete");
@@ -158,7 +190,7 @@ export default function BannersPage() {
     const data = new FormData();
     data.append("isActive", String(!banner.isActive));
     try {
-      await API.put(`/banners/${banner._id}`, data);
+      await API.put(`/api/banners/${banner._id}`, data);
       fetchBanners();
     } catch (err) {
       alert("Failed to update status");
@@ -175,8 +207,8 @@ export default function BannersPage() {
         variant="outlined" component="label" fullWidth
         sx={{ borderColor: "#2e2e42", color: "#aaa", mb: 2, "&:hover": { borderColor: "#6c63ff" } }}
       >
-        Choose Images (up to 4)
-        <input type="file" accept="image/*" multiple hidden
+        Add Image
+        <input type="file" accept="image/*" hidden
           onChange={(e) => handleImagesChange(e, type)}
         />
       </Button>
@@ -189,6 +221,7 @@ export default function BannersPage() {
                 src={src} alt={`preview-${i}`}
                 style={{ width: "100%", height: 80, objectFit: "cover", borderRadius: 6, marginBottom: 8 }}
               />
+              <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               <TextField
                 label={`Image ${i + 1} — Link URL`}
                 placeholder="/category/cargo or /shop"
@@ -198,6 +231,10 @@ export default function BannersPage() {
                 InputLabelProps={{ sx: { color: "#888", fontSize: 12 } }}
                 InputProps={{ sx: { color: "#fff", fontSize: 13, "& fieldset": { borderColor: "#2e2e42" } } }}
               />
+              <IconButton onClick={() => removeImage(type, previewKey, hrefKey, i)} sx={{ color: "#ef4444" }}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
+              </Box>
             </Box>
           ))}
         </Box>
