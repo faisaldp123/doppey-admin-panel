@@ -52,6 +52,7 @@ export default function AdminOrders() {
       const res = await axios.get(`${API}/api/admin/orders`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("FIRST ORDER:", res.data[0]);
       setOrders(res.data || []);
     } catch (err) {
       alert(err.response?.data?.message || "Failed to load orders");
@@ -142,8 +143,19 @@ export default function AdminOrders() {
               <TableRow key={o._id}>
                 <TableCell sx={{ color: "white" }}>#{o._id.slice(-6)}</TableCell>
                 <TableCell sx={{ color: "white" }}>
-                  {o.user?.phone || o.user?.email || "-"}
-                </TableCell>
+  <Box>
+    <Typography sx={{ color: "white", fontWeight: 600 }}>
+      {o.address?.fullName || o.user?.name || "N/A"}
+    </Typography>
+
+    <Typography variant="body2" sx={{ color: "#bdbdbd" }}>
+      {o.user?.phone ||
+        o.address?.phone ||
+        o.user?.email ||
+        "-"}
+    </Typography>
+  </Box>
+</TableCell>
                 <TableCell sx={{ color: "white" }}>Rs. {o.totalAmount}</TableCell>
                 <TableCell sx={{ color: "white" }}>{o.paymentMethod || "-"}</TableCell>
                 <TableCell>
@@ -199,7 +211,24 @@ export default function AdminOrders() {
           {selectedOrder && (
             <Stack spacing={2}>
               <Typography><strong>Order ID:</strong> {selectedOrder._id}</Typography>
-              <Typography><strong>User:</strong> {selectedOrder.user?.phone || selectedOrder.user?.email || "-"}</Typography>
+             <Typography>
+  <strong>Name:</strong>{" "}
+  {selectedOrder.address?.fullName ||
+    selectedOrder.user?.name ||
+    "-"}
+</Typography>
+
+<Typography>
+  <strong>Phone:</strong>{" "}
+  {selectedOrder.user?.phone ||
+    selectedOrder.address?.phone ||
+    "-"}
+</Typography>
+
+<Typography>
+  <strong>Email:</strong>{" "}
+  {selectedOrder.user?.email || "-"}
+</Typography>
               <Typography><strong>Status:</strong> {selectedOrder.status}</Typography>
               <Typography><strong>Total:</strong> Rs. {selectedOrder.totalAmount}</Typography>
               <Typography><strong>Payment:</strong> {selectedOrder.paymentMethod || "-"}</Typography>
