@@ -31,6 +31,10 @@ import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import ViewCarouselIcon from "@mui/icons-material/ViewCarousel"; // ← ADD THIS
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import CampaignIcon from "@mui/icons-material/Campaign";
+import WeekendIcon from "@mui/icons-material/Weekend";
+import AutoStoriesIcon from "@mui/icons-material/AutoStories";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -68,19 +72,23 @@ export default function RootLayout({ children }) {
   }
 
   const menuItems = [
-    { href: "/dashboard",       label: "Dashboard",      icon: <DashboardIcon /> },
-    { href: "/products",        label: "Products",       icon: <InventoryIcon /> },
-    { href: "/categories",      label: "Categories",     icon: <CategoryIcon /> },
-    { href: "/sub-categories",  label: "Sub Categories", icon: <AccountTreeIcon /> },
-    { href: "/banners",         label: "Banners",        icon: <ViewCarouselIcon /> }, // ← ADD THIS
-    { href: "/inventory",       label: "Inventory",      icon: <StoreIcon /> },
-    { href: "/warehouse",       label: "Warehouse",      icon: <WarehouseIcon /> },
-    { href: "/orders",          label: "Orders",         icon: <ShoppingCartIcon /> },
-    { href: "/returns",         label: "Returns / RTO",  icon: <AssignmentReturnIcon /> },
-    { href: "/coupon",          label: "Coupons",        icon: <LocalOfferIcon /> },
-    { href: "/payments",        label: "Payments",       icon: <PaymentsIcon /> },
-    { href: "/users",           label: "Users",          icon: <PeopleIcon /> },
-  ];
+  { href: "/dashboard",          label: "Dashboard",       icon: <DashboardIcon /> },
+  { href: "/products",           label: "Products",        icon: <InventoryIcon /> },
+  { href: "/categories",         label: "Categories",      icon: <CategoryIcon /> },
+  { href: "/sub-categories",     label: "Sub Categories",  icon: <AccountTreeIcon /> },
+  { href: "/banners",            label: "Banners",         icon: <ViewCarouselIcon /> },
+  { href: "/shop-categories",    label: "Shop Categories",  icon: <StorefrontIcon /> },
+  { href: "/promo-banners",      label: "Promo Banners",    icon: <CampaignIcon /> },
+  { href: "/lifestyle-sections", label: "Lifestyle Sections", icon: <WeekendIcon /> },
+  { href: "/brand-story",        label: "Brand Story",      icon: <AutoStoriesIcon /> },
+  { href: "/inventory",          label: "Inventory",       icon: <StoreIcon /> },
+  { href: "/warehouse",          label: "Warehouse",       icon: <WarehouseIcon /> },
+  { href: "/orders",             label: "Orders",          icon: <ShoppingCartIcon /> },
+  { href: "/returns",            label: "Returns / RTO",   icon: <AssignmentReturnIcon /> },
+  { href: "/coupon",             label: "Coupons",         icon: <LocalOfferIcon /> },
+  { href: "/payments",           label: "Payments",        icon: <PaymentsIcon /> },
+  { href: "/users",              label: "Users",           icon: <PeopleIcon /> },
+];
 
   const drawerContent = (
     <Box>
