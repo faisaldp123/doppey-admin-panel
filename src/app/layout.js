@@ -28,7 +28,7 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import MenuIcon from "@mui/icons-material/Menu";
 import StoreIcon from "@mui/icons-material/Store";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
-import WarehouseIcon from "@mui/icons-material/Warehouse";
+// import WarehouseIcon from "@mui/icons-material/Warehouse";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import ViewCarouselIcon from "@mui/icons-material/ViewCarousel"; // ← ADD THIS
 import StorefrontIcon from "@mui/icons-material/Storefront";
@@ -83,8 +83,8 @@ export default function RootLayout({ children }) {
   { href: "/lifestyle-sections", label: "Lifestyle Sections", icon: <WeekendIcon /> },
   { href: "/brand-story",        label: "Brand Story",      icon: <AutoStoriesIcon /> },
   { href: "/instagram-posts",     label: "Instagram Posts",  icon: <InstagramIcon /> },
-  { href: "/inventory",          label: "Inventory",       icon: <StoreIcon /> },
-  { href: "/warehouse",          label: "Warehouse",       icon: <WarehouseIcon /> },
+  // { href: "/inventory",          label: "Inventory",       icon: <StoreIcon /> },
+  // { href: "/warehouse",          label: "Warehouse",       icon: <WarehouseIcon /> },
   { href: "/orders",             label: "Orders",          icon: <ShoppingCartIcon /> },
   { href: "/returns",            label: "Returns / RTO",   icon: <AssignmentReturnIcon /> },
   { href: "/coupon",             label: "Coupons",         icon: <LocalOfferIcon /> },
