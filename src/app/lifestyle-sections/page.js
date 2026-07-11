@@ -15,7 +15,7 @@ import API from "@/lib/axios";
 const emptyForm = {
   label: "", heading: "", description: "", buttonText: "Shop Now",
   buttonLink: "/", rightTopTitle: "", rightBottomTitle: "",
-  order: "0", isActive: true,
+  isActive: true,
   leftImage: null, rightTopImage: null, rightBottomImage: null,
 };
 
@@ -59,7 +59,6 @@ export default function LifestyleSectionsPage() {
       buttonLink: s.buttonLink || "/",
       rightTopTitle: s.rightTopTitle || "",
       rightBottomTitle: s.rightBottomTitle || "",
-      order: String(s.order),
       isActive: s.isActive,
       leftImage: null,
       rightTopImage: null,
@@ -101,7 +100,6 @@ export default function LifestyleSectionsPage() {
     data.append("buttonLink", form.buttonLink);
     data.append("rightTopTitle", form.rightTopTitle);
     data.append("rightBottomTitle", form.rightBottomTitle);
-    data.append("order", form.order);
     data.append("isActive", String(form.isActive));
     if (form.leftImage) data.append("leftImage", form.leftImage);
     if (form.rightTopImage) data.append("rightTopImage", form.rightTopImage);
@@ -183,6 +181,10 @@ export default function LifestyleSectionsPage() {
         </Button>
       </Box>
 
+      <Typography sx={{ color: "#666", fontSize: 13, mb: 2 }}>
+        New sections are added to the top automatically — no need to set any order.
+      </Typography>
+
       <TableContainer component={Paper} sx={{ bgcolor: "#1e1e2f", border: "1px solid #2e2e42" }}>
         <Table>
           <TableHead>
@@ -190,7 +192,7 @@ export default function LifestyleSectionsPage() {
               <TableCell>Images</TableCell>
               <TableCell>Heading</TableCell>
               <TableCell>Label</TableCell>
-              <TableCell>Order</TableCell>
+              <TableCell>Added</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -223,7 +225,9 @@ export default function LifestyleSectionsPage() {
                   </TableCell>
                   <TableCell sx={{ color: "#fff" }}>{s.heading}</TableCell>
                   <TableCell sx={{ color: "#aaa" }}>{s.label}</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: 600 }}>{s.order}</TableCell>
+                  <TableCell sx={{ color: "#888", fontSize: 13 }}>
+                    {new Date(s.createdAt).toLocaleDateString("en-IN")}
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={s.isActive ? "Active" : "Inactive"}
@@ -263,26 +267,27 @@ export default function LifestyleSectionsPage() {
           {editingId ? "Edit Section" : "Add New Section"}
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ pt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
             label="Label" value={form.label}
             onChange={(e) => setForm((p) => ({ ...p, label: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            sx={{ mt: 1 }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
           <TextField
             label="Heading" value={form.heading}
             onChange={(e) => setForm((p) => ({ ...p, heading: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
           <TextField
             label="Description" value={form.description} multiline rows={3}
             onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
@@ -290,14 +295,14 @@ export default function LifestyleSectionsPage() {
               label="Button Text" value={form.buttonText}
               onChange={(e) => setForm((p) => ({ ...p, buttonText: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
             <TextField
               label="Button Link" value={form.buttonLink}
               onChange={(e) => setForm((p) => ({ ...p, buttonLink: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
           </Box>
@@ -306,35 +311,27 @@ export default function LifestyleSectionsPage() {
               label="Right Top Title" value={form.rightTopTitle}
               onChange={(e) => setForm((p) => ({ ...p, rightTopTitle: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
             <TextField
               label="Right Bottom Title" value={form.rightBottomTitle}
               onChange={(e) => setForm((p) => ({ ...p, rightBottomTitle: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
           </Box>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <TextField
-              label="Order (1, 2, 3...)" type="number" value={form.order}
-              onChange={(e) => setForm((p) => ({ ...p, order: e.target.value }))}
-              fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
-              InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-                />
-              }
-              label={<Typography color="#aaa">Active</Typography>}
-            />
-          </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.isActive}
+                onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
+              />
+            }
+            label={<Typography color="#aaa">Active</Typography>}
+          />
 
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2 }}>
             <ImageUploadBox field="leftImage" label="⬅️ Left Image" />

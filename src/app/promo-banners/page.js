@@ -14,7 +14,7 @@ import API from "@/lib/axios";
 
 const emptyForm = {
   title: "", subtitle: "", buttonText: "Shop Now", buttonLink: "/",
-  order: "0", isActive: true, backgroundImage: null,
+  isActive: true, backgroundImage: null,
 };
 
 export default function PromoBannersPage() {
@@ -54,7 +54,6 @@ export default function PromoBannersPage() {
       subtitle: b.subtitle || "",
       buttonText: b.buttonText || "Shop Now",
       buttonLink: b.buttonLink || "/",
-      order: String(b.order),
       isActive: b.isActive,
       backgroundImage: null,
     });
@@ -87,7 +86,6 @@ export default function PromoBannersPage() {
     data.append("subtitle", form.subtitle);
     data.append("buttonText", form.buttonText);
     data.append("buttonLink", form.buttonLink);
-    data.append("order", form.order);
     data.append("isActive", String(form.isActive));
     if (form.backgroundImage) data.append("backgroundImage", form.backgroundImage);
 
@@ -145,6 +143,10 @@ export default function PromoBannersPage() {
         </Button>
       </Box>
 
+      <Typography sx={{ color: "#666", fontSize: 13, mb: 2 }}>
+        New banners are added to the top automatically — no need to set any order.
+      </Typography>
+
       <TableContainer component={Paper} sx={{ bgcolor: "#1e1e2f", border: "1px solid #2e2e42" }}>
         <Table>
           <TableHead>
@@ -153,7 +155,7 @@ export default function PromoBannersPage() {
               <TableCell>Title</TableCell>
               <TableCell>Subtitle</TableCell>
               <TableCell>Button</TableCell>
-              <TableCell>Order</TableCell>
+              <TableCell>Added</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -182,7 +184,9 @@ export default function PromoBannersPage() {
                   <TableCell sx={{ color: "#fff" }}>{b.title}</TableCell>
                   <TableCell sx={{ color: "#aaa" }}>{b.subtitle}</TableCell>
                   <TableCell sx={{ color: "#aaa" }}>{b.buttonText}</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: 600 }}>{b.order}</TableCell>
+                  <TableCell sx={{ color: "#888", fontSize: 13 }}>
+                    {new Date(b.createdAt).toLocaleDateString("en-IN")}
+                  </TableCell>
                   <TableCell>
                     <Chip
                       label={b.isActive ? "Active" : "Inactive"}
@@ -222,13 +226,14 @@ export default function PromoBannersPage() {
           {editingId ? "Edit Banner" : "Add New Banner"}
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ pt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
             label="Title"
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            sx={{ mt: 1 }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
           <TextField
@@ -236,7 +241,7 @@ export default function PromoBannersPage() {
             value={form.subtitle}
             onChange={(e) => setForm((p) => ({ ...p, subtitle: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
@@ -245,7 +250,7 @@ export default function PromoBannersPage() {
               value={form.buttonText}
               onChange={(e) => setForm((p) => ({ ...p, buttonText: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
             <TextField
@@ -254,30 +259,20 @@ export default function PromoBannersPage() {
               value={form.buttonLink}
               onChange={(e) => setForm((p) => ({ ...p, buttonLink: e.target.value }))}
               fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
+              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
               InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
             />
           </Box>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <TextField
-              label="Order (1, 2, 3...)"
-              type="number"
-              value={form.order}
-              onChange={(e) => setForm((p) => ({ ...p, order: e.target.value }))}
-              fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
-              InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-                />
-              }
-              label={<Typography color="#aaa">Active</Typography>}
-            />
-          </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.isActive}
+                onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
+              />
+            }
+            label={<Typography color="#aaa">Active</Typography>}
+          />
 
           <Box sx={{ border: "1px solid #2e2e42", borderRadius: 2, p: 2 }}>
             <Typography color="#aaa" fontSize={13} fontWeight={600} mb={1}>

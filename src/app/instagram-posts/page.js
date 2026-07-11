@@ -13,13 +13,11 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import API from "@/lib/axios";
 
 const emptyForm = {
-  subtitle: "", heading: "", paragraphOne: "", paragraphTwo: "",
-  paragraphThree: "", buttonText: "Explore", buttonLink: "/",
-  isActive: true, image: null,
+  link: "https://instagram.com", isActive: true, image: null,
 };
 
-export default function BrandStoryPage() {
-  const [stories, setStories]       = useState([]);
+export default function InstagramPostsPage() {
+  const [posts, setPosts]           = useState([]);
   const [loading, setLoading]       = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -27,11 +25,11 @@ export default function BrandStoryPage() {
   const [form, setForm]             = useState(emptyForm);
   const [preview, setPreview]       = useState(null);
 
-  const fetchStories = async () => {
+  const fetchPosts = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/api/brand-story");
-      setStories(res.data);
+      const res = await API.get("/api/instagram-posts");
+      setPosts(res.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -39,7 +37,7 @@ export default function BrandStoryPage() {
     }
   };
 
-  useEffect(() => { fetchStories(); }, []);
+  useEffect(() => { fetchPosts(); }, []);
 
   const openAdd = () => {
     setForm(emptyForm);
@@ -48,20 +46,14 @@ export default function BrandStoryPage() {
     setDialogOpen(true);
   };
 
-  const openEdit = (s) => {
-    setEditingId(s._id);
+  const openEdit = (p) => {
+    setEditingId(p._id);
     setForm({
-      subtitle: s.subtitle || "",
-      heading: s.heading || "",
-      paragraphOne: s.paragraphOne || "",
-      paragraphTwo: s.paragraphTwo || "",
-      paragraphThree: s.paragraphThree || "",
-      buttonText: s.buttonText || "Explore",
-      buttonLink: s.buttonLink || "/",
-      isActive: s.isActive,
+      link: p.link || "https://instagram.com",
+      isActive: p.isActive,
       image: null,
     });
-    setPreview(s.image || null);
+    setPreview(p.image || null);
     setDialogOpen(true);
   };
 
@@ -86,49 +78,43 @@ export default function BrandStoryPage() {
     }
 
     const data = new FormData();
-    data.append("subtitle", form.subtitle);
-    data.append("heading", form.heading);
-    data.append("paragraphOne", form.paragraphOne);
-    data.append("paragraphTwo", form.paragraphTwo);
-    data.append("paragraphThree", form.paragraphThree);
-    data.append("buttonText", form.buttonText);
-    data.append("buttonLink", form.buttonLink);
+    data.append("link", form.link);
     data.append("isActive", String(form.isActive));
     if (form.image) data.append("image", form.image);
 
     setSubmitting(true);
     try {
       if (editingId) {
-        await API.put(`/api/brand-story/${editingId}`, data);
+        await API.put(`/api/instagram-posts/${editingId}`, data);
       } else {
-        await API.post("/api/brand-story", data);
+        await API.post("/api/instagram-posts", data);
       }
       handleClose();
-      fetchStories();
+      fetchPosts();
     } catch (err) {
       console.error(err);
-      alert("Failed to save brand story");
+      alert("Failed to save post");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Delete this brand story?")) return;
+    if (!confirm("Delete this post?")) return;
     try {
-      await API.delete(`/api/brand-story/${id}`);
-      fetchStories();
+      await API.delete(`/api/instagram-posts/${id}`);
+      fetchPosts();
     } catch (err) {
       alert("Failed to delete");
     }
   };
 
-  const handleToggle = async (s) => {
+  const handleToggle = async (p) => {
     const data = new FormData();
-    data.append("isActive", String(!s.isActive));
+    data.append("isActive", String(!p.isActive));
     try {
-      await API.put(`/api/brand-story/${s._id}`, data);
-      fetchStories();
+      await API.put(`/api/instagram-posts/${p._id}`, data);
+      fetchPosts();
     } catch (err) {
       alert("Failed to update status");
     }
@@ -138,7 +124,7 @@ export default function BrandStoryPage() {
     <Box>
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
         <Typography variant="h5" fontWeight={700} color="#fff">
-          Brand Story
+          Instagram Posts
         </Typography>
         <Button
           variant="contained"
@@ -146,12 +132,12 @@ export default function BrandStoryPage() {
           onClick={openAdd}
           sx={{ bgcolor: "#6c63ff", "&:hover": { bgcolor: "#574fd6" } }}
         >
-          Add Story
+          Add Post
         </Button>
       </Box>
 
       <Typography sx={{ color: "#666", fontSize: 13, mb: 2 }}>
-        New stories are added to the top automatically — no need to set any order.
+        New posts are added to the top automatically — no need to set any order.
       </Typography>
 
       <TableContainer component={Paper} sx={{ bgcolor: "#1e1e2f", border: "1px solid #2e2e42" }}>
@@ -159,8 +145,7 @@ export default function BrandStoryPage() {
           <TableHead>
             <TableRow sx={{ "& th": { color: "#aaa", borderColor: "#2e2e42", fontWeight: 600 } }}>
               <TableCell>Image</TableCell>
-              <TableCell>Heading</TableCell>
-              <TableCell>Subtitle</TableCell>
+              <TableCell>Link</TableCell>
               <TableCell>Added</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
@@ -169,47 +154,57 @@ export default function BrandStoryPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, borderColor: "#2e2e42" }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 6, borderColor: "#2e2e42" }}>
                   <CircularProgress sx={{ color: "#6c63ff" }} />
                 </TableCell>
               </TableRow>
-            ) : stories.length === 0 ? (
+            ) : posts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, color: "#666", borderColor: "#2e2e42" }}>
-                  No brand stories yet. Click "Add Story" to get started.
+                <TableCell colSpan={5} align="center" sx={{ py: 6, color: "#666", borderColor: "#2e2e42" }}>
+                  No Instagram posts yet. Click "Add Post" to get started.
                 </TableCell>
               </TableRow>
             ) : (
-              stories.map((s) => (
-                <TableRow key={s._id} sx={{ "& td": { borderColor: "#2e2e42" } }}>
+              posts.map((p) => (
+                <TableRow key={p._id} sx={{ "& td": { borderColor: "#2e2e42" } }}>
                   <TableCell>
-                    <img src={s.image} alt={s.heading}
+                    <img src={p.image} alt="post"
                       style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 6, border: "1px solid #2e2e42" }}
                     />
                   </TableCell>
-                  <TableCell sx={{ color: "#fff" }}>{s.heading}</TableCell>
-                  <TableCell sx={{ color: "#aaa" }}>{s.subtitle}</TableCell>
+                  <TableCell
+                    sx={{
+                      color: "#aaa",
+                      maxWidth: 220,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                    title={p.link}
+                  >
+                    {p.link}
+                  </TableCell>
                   <TableCell sx={{ color: "#888", fontSize: 13 }}>
-                    {new Date(s.createdAt).toLocaleDateString("en-IN")}
+                    {new Date(p.createdAt).toLocaleDateString("en-IN")}
                   </TableCell>
                   <TableCell>
                     <Chip
-                      label={s.isActive ? "Active" : "Inactive"}
+                      label={p.isActive ? "Active" : "Inactive"}
                       size="small"
-                      onClick={() => handleToggle(s)}
+                      onClick={() => handleToggle(p)}
                       sx={{
                         cursor: "pointer",
-                        bgcolor: s.isActive ? "#166534" : "#7f1d1d",
-                        color:   s.isActive ? "#bbf7d0" : "#fecaca",
+                        bgcolor: p.isActive ? "#166534" : "#7f1d1d",
+                        color:   p.isActive ? "#bbf7d0" : "#fecaca",
                         fontWeight: 600,
                       }}
                     />
                   </TableCell>
                   <TableCell>
-                    <IconButton onClick={() => openEdit(s)} sx={{ color: "#6c63ff" }}>
+                    <IconButton onClick={() => openEdit(p)} sx={{ color: "#6c63ff" }}>
                       <EditIcon fontSize="small" />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(s._id)} sx={{ color: "#ef4444" }}>
+                    <IconButton onClick={() => handleDelete(p._id)} sx={{ color: "#ef4444" }}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   </TableCell>
@@ -228,62 +223,20 @@ export default function BrandStoryPage() {
         PaperProps={{ sx: { bgcolor: "#1e1e2f", border: "1px solid #2e2e42" } }}
       >
         <DialogTitle sx={{ color: "#fff", borderBottom: "1px solid #2e2e42" }}>
-          {editingId ? "Edit Brand Story" : "Add New Brand Story"}
+          {editingId ? "Edit Post" : "Add New Post"}
         </DialogTitle>
 
         <DialogContent sx={{ pt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            label="Subtitle" value={form.subtitle}
-            onChange={(e) => setForm((p) => ({ ...p, subtitle: e.target.value }))}
+            label="Instagram Post Link"
+            placeholder="https://instagram.com/p/..."
+            value={form.link}
+            onChange={(e) => setForm((p) => ({ ...p, link: e.target.value }))}
             fullWidth size="small"
             sx={{ mt: 1 }}
             InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
-          <TextField
-            label="Heading" value={form.heading}
-            onChange={(e) => setForm((p) => ({ ...p, heading: e.target.value }))}
-            fullWidth size="small"
-            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-            InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-          />
-          <TextField
-            label="Paragraph One" value={form.paragraphOne} multiline rows={2}
-            onChange={(e) => setForm((p) => ({ ...p, paragraphOne: e.target.value }))}
-            fullWidth size="small"
-            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-            InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-          />
-          <TextField
-            label="Paragraph Two" value={form.paragraphTwo} multiline rows={2}
-            onChange={(e) => setForm((p) => ({ ...p, paragraphTwo: e.target.value }))}
-            fullWidth size="small"
-            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-            InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-          />
-          <TextField
-            label="Paragraph Three" value={form.paragraphThree} multiline rows={2}
-            onChange={(e) => setForm((p) => ({ ...p, paragraphThree: e.target.value }))}
-            fullWidth size="small"
-            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-            InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-          />
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <TextField
-              label="Button Text" value={form.buttonText}
-              onChange={(e) => setForm((p) => ({ ...p, buttonText: e.target.value }))}
-              fullWidth size="small"
-              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-              InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-            />
-            <TextField
-              label="Button Link" value={form.buttonLink}
-              onChange={(e) => setForm((p) => ({ ...p, buttonLink: e.target.value }))}
-              fullWidth size="small"
-              InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
-              InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-            />
-          </Box>
 
           <FormControlLabel
             control={
@@ -297,7 +250,7 @@ export default function BrandStoryPage() {
 
           <Box sx={{ border: "1px solid #2e2e42", borderRadius: 2, p: 2 }}>
             <Typography color="#aaa" fontSize={13} fontWeight={600} mb={1}>
-              🖼️ Brand Story Image
+              🖼️ Post Image
             </Typography>
             <Button
               variant="outlined" component="label" fullWidth
@@ -326,7 +279,7 @@ export default function BrandStoryPage() {
             disabled={submitting}
             sx={{ bgcolor: "#6c63ff", "&:hover": { bgcolor: "#574fd6" } }}
           >
-            {submitting ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : editingId ? "Update Story" : "Add Story"}
+            {submitting ? <CircularProgress size={20} sx={{ color: "#fff" }} /> : editingId ? "Update Post" : "Add Post"}
           </Button>
         </DialogActions>
       </Dialog>

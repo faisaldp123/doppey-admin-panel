@@ -35,6 +35,7 @@ import StorefrontIcon from "@mui/icons-material/Storefront";
 import CampaignIcon from "@mui/icons-material/Campaign";
 import WeekendIcon from "@mui/icons-material/Weekend";
 import AutoStoriesIcon from "@mui/icons-material/AutoStories";
+import InstagramIcon from "@mui/icons-material/Instagram";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -81,6 +82,7 @@ export default function RootLayout({ children }) {
   { href: "/promo-banners",      label: "Promo Banners",    icon: <CampaignIcon /> },
   { href: "/lifestyle-sections", label: "Lifestyle Sections", icon: <WeekendIcon /> },
   { href: "/brand-story",        label: "Brand Story",      icon: <AutoStoriesIcon /> },
+  { href: "/instagram-posts",     label: "Instagram Posts",  icon: <InstagramIcon /> },
   { href: "/inventory",          label: "Inventory",       icon: <StoreIcon /> },
   { href: "/warehouse",          label: "Warehouse",       icon: <WarehouseIcon /> },
   { href: "/orders",             label: "Orders",          icon: <ShoppingCartIcon /> },

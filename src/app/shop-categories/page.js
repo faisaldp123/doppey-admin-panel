@@ -6,13 +6,17 @@ import {
   TableCell, TableContainer, TableHead, TableRow, Paper,
   Chip, IconButton, CircularProgress, Dialog, DialogTitle,
   DialogContent, DialogActions, Switch, FormControlLabel,
+  MenuItem,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import API from "@/lib/axios";
 
-const emptyForm = { title: "", link: "/", order: "0", isActive: true, image: null };
+// ← Same fixed order as backend — pick one, sequence is automatic
+const CATEGORY_OPTIONS = ["All", "Men", "Women", "Kids", "Accessories"];
+
+const emptyForm = { title: "All", link: "/", isActive: true, image: null };
 
 export default function ShopCategoriesPage() {
   const [categories, setCategories] = useState([]);
@@ -47,9 +51,8 @@ export default function ShopCategoriesPage() {
   const openEdit = (cat) => {
     setEditingId(cat._id);
     setForm({
-      title: cat.title || "",
+      title: cat.title || "All",
       link: cat.link || "/",
-      order: String(cat.order),
       isActive: cat.isActive,
       image: null,
     });
@@ -80,7 +83,6 @@ export default function ShopCategoriesPage() {
     const data = new FormData();
     data.append("title", form.title);
     data.append("link", form.link);
-    data.append("order", form.order);
     data.append("isActive", String(form.isActive));
     if (form.image) data.append("image", form.image);
 
@@ -138,14 +140,17 @@ export default function ShopCategoriesPage() {
         </Button>
       </Box>
 
+      <Typography sx={{ color: "#666", fontSize: 13, mb: 2 }}>
+        Categories always appear in this order on your site: All → Men → Women → Kids → Accessories.
+      </Typography>
+
       <TableContainer component={Paper} sx={{ bgcolor: "#1e1e2f", border: "1px solid #2e2e42" }}>
         <Table>
           <TableHead>
             <TableRow sx={{ "& th": { color: "#aaa", borderColor: "#2e2e42", fontWeight: 600 } }}>
               <TableCell>Image</TableCell>
-              <TableCell>Title</TableCell>
+              <TableCell>Category</TableCell>
               <TableCell>Link</TableCell>
-              <TableCell>Order</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -153,13 +158,13 @@ export default function ShopCategoriesPage() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, borderColor: "#2e2e42" }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 6, borderColor: "#2e2e42" }}>
                   <CircularProgress sx={{ color: "#6c63ff" }} />
                 </TableCell>
               </TableRow>
             ) : categories.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 6, color: "#666", borderColor: "#2e2e42" }}>
+                <TableCell colSpan={5} align="center" sx={{ py: 6, color: "#666", borderColor: "#2e2e42" }}>
                   No categories yet. Click "Add Category" to get started.
                 </TableCell>
               </TableRow>
@@ -171,9 +176,8 @@ export default function ShopCategoriesPage() {
                       style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 6, border: "1px solid #2e2e42" }}
                     />
                   </TableCell>
-                  <TableCell sx={{ color: "#fff" }}>{cat.title}</TableCell>
+                  <TableCell sx={{ color: "#fff", fontWeight: 600 }}>{cat.title}</TableCell>
                   <TableCell sx={{ color: "#aaa" }}>{cat.link}</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: 600 }}>{cat.order}</TableCell>
                   <TableCell>
                     <Chip
                       label={cat.isActive ? "Active" : "Inactive"}
@@ -213,44 +217,41 @@ export default function ShopCategoriesPage() {
           {editingId ? "Edit Category" : "Add New Category"}
         </DialogTitle>
 
-        <DialogContent sx={{ pt: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+        <DialogContent sx={{ pt: 4, display: "flex", flexDirection: "column", gap: 2 }}>
           <TextField
-            label="Title"
+            select
+            label="Category"
             value={form.title}
             onChange={(e) => setForm((p) => ({ ...p, title: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            sx={{ mt: 1 }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-          />
+          >
+            {CATEGORY_OPTIONS.map((opt) => (
+              <MenuItem key={opt} value={opt}>{opt}</MenuItem>
+            ))}
+          </TextField>
+
           <TextField
             label="Link"
-            placeholder="/category/cargo or /shop"
+            placeholder="/category/men or /shop"
             value={form.link}
             onChange={(e) => setForm((p) => ({ ...p, link: e.target.value }))}
             fullWidth size="small"
-            InputLabelProps={{ sx: { color: "#aaa" } }}
+            InputLabelProps={{ shrink: true, sx: { color: "#aaa" } }}
             InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
           />
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
-            <TextField
-              label="Order (1, 2, 3...)"
-              type="number"
-              value={form.order}
-              onChange={(e) => setForm((p) => ({ ...p, order: e.target.value }))}
-              fullWidth size="small"
-              InputLabelProps={{ sx: { color: "#aaa" } }}
-              InputProps={{ sx: { color: "#fff", "& fieldset": { borderColor: "#2e2e42" } } }}
-            />
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={form.isActive}
-                  onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
-                />
-              }
-              label={<Typography color="#aaa">Active</Typography>}
-            />
-          </Box>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={form.isActive}
+                onChange={(e) => setForm((p) => ({ ...p, isActive: e.target.checked }))}
+              />
+            }
+            label={<Typography color="#aaa">Active</Typography>}
+          />
 
           <Box sx={{ border: "1px solid #2e2e42", borderRadius: 2, p: 2 }}>
             <Typography color="#aaa" fontSize={13} fontWeight={600} mb={1}>
