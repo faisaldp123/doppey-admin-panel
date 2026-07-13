@@ -239,7 +239,7 @@ export default function BannersPage() {
           ))}
         </Box>
       ) : (
-        <Box sx={{ width: "100%", height: 80, bgcolor: "#0f0f1a", borderRadius: 2, border: "1px dashed #2e2e42", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Box sx={{ width: "100%", height: 80, bgcolor: "#f9fafb", borderRadius: 2, border: "1px dashed #d1d5db", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Typography color="#444" fontSize={12}>No images selected</Typography>
         </Box>
       )}
@@ -272,7 +272,7 @@ export default function BannersPage() {
           { icon: "🎬", label: "Video",          value: "MP4 / WebM",     sub: "1 video · Auto-plays muted" },
           { icon: "🔗", label: "Per-image Links", value: "Category / Subcategory", sub: "e.g. /category/cargo" },
         ].map((card) => (
-          <Box key={card.label} sx={{ bgcolor: "#1e1e2f", borderRadius: 2, p: 2, flex: 1, minWidth: 160, border: "1px solid #2e2e42" }}>
+          <Box key={card.label} sx={{ bgcolor: "#fff", borderRadius: 2, p: 2, flex: 1, minWidth: 160, border: "1px solid #e5e7eb" }}>
             <Typography color="#aaa" fontSize={12} mb={0.5}>{card.icon} {card.label}</Typography>
             <Typography color="#fff" fontWeight={600}>{card.value}</Typography>
             <Typography color="#666" fontSize={12}>{card.sub}</Typography>
@@ -281,7 +281,7 @@ export default function BannersPage() {
       </Box>
 
       {/* Table */}
-      <TableContainer component={Paper} sx={{ bgcolor: "#1e1e2f", border: "1px solid #2e2e42" }}>
+      <TableContainer component={Paper} sx={{ bgcolor: "#fff", border: "1px solid #e5e7eb" }}>
         <Table>
           <TableHead>
             <TableRow sx={{ "& th": { color: "#aaa", borderColor: "#2e2e42", fontWeight: 600 } }}>
@@ -384,7 +384,7 @@ export default function BannersPage() {
         onClose={handleClose}
         maxWidth="md"
         fullWidth
-        PaperProps={{ sx: { bgcolor: "#1e1e2f", border: "1px solid #2e2e42" } }}
+        PaperProps={{ sx: { bgcolor: "#fff", border: "1px solid #e5e7eb" } }}
       >
         <DialogTitle sx={{ color: "#fff", borderBottom: "1px solid #2e2e42" }}>
           {editingId ? "Edit Banner" : "Add New Banner"}
@@ -460,7 +460,7 @@ export default function BannersPage() {
                 style={{ width: "100%", height: 120, objectFit: "cover", borderRadius: 8, border: "1px solid #2e2e42" }}
               />
             ) : (
-              <Box sx={{ height: 60, bgcolor: "#0f0f1a", borderRadius: 2, border: "1px dashed #2e2e42", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Box sx={{ height: 60, bgcolor: "#f9fafb", borderRadius: 2, border: "1px dashed #d1d5db", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Typography color="#444" fontSize={12}>No video selected (optional)</Typography>
               </Box>
             )}

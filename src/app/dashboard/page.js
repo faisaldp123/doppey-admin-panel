@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import useAdminAuth from "../hooks/useAdminAuth";
-import API from "@/lib/axios";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -33,6 +33,8 @@ const extractArray = (payload, keys = []) => {
   return [];
 };
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function AdminDashboard() {
   useAdminAuth();
   const router = useRouter();
@@ -48,9 +50,9 @@ export default function AdminDashboard() {
       setLoading(true);
 
       const [ordersResult, productsResult, returnsResult] = await Promise.allSettled([
-        API.get("/api/admin/orders"), // ← admin-only route, returns ALL orders
-        API.get("/api/products"),
-        API.get("/api/returns"),
+        axios.get(`${API_URL}/api/admin/orders`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }),
+        axios.get(`${API_URL}/api/products`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }),
+        axios.get(`${API_URL}/api/returns`, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }),
       ]);
 
       const newErrors = { orders: null, products: null, returns: null };
@@ -380,7 +382,9 @@ export default function AdminDashboard() {
                 ) : (
                   returns.slice(0, 5).map((r) => (
                     <TableRow key={r._id} sx={{ "&:hover": { backgroundColor: "#1a1a2e" } }}>
-                      <TableCell sx={tableCell}>{r.orderId}</TableCell>
+                      <TableCell sx={tableCell}>
+                        #{(r.orderId?._id || r.orderId || "-").toString().slice(-6)}
+                      </TableCell>
                       <TableCell sx={tableCell}>{r.reason}</TableCell>
                       <TableCell sx={tableCell}>
                         <Chip
@@ -388,17 +392,17 @@ export default function AdminDashboard() {
                           size="small"
                           sx={{
                             bgcolor:
-                              r.status === "Delivered"
-                                ? "#16341f"
-                                : r.status === "Lost"
-                                ? "#3a1414"
-                                : "#3a2a10",
+                              r.status === "Refund Completed"
+                                ? "#e0f2fe"
+                                : r.status === "Rejected"
+                                ? "#fee2e2"
+                                : "#fef3c7",
                             color:
-                              r.status === "Delivered"
-                                ? "#4caf50"
-                                : r.status === "Lost"
-                                ? "#f44336"
-                                : "#ff9800",
+                              r.status === "Refund Completed"
+                                ? "#0369a1"
+                                : r.status === "Rejected"
+                                ? "#b91c1c"
+                                : "#92400e",
                             fontWeight: 600,
                           }}
                         />

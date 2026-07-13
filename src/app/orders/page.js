@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import Barcode from "react-barcode";
 import {
   Box,
   Button,
@@ -35,12 +36,23 @@ const statusColor = {
   Cancelled: "error",
 };
 
+// ← EDIT THESE with your actual store/warehouse details —
+// they print as the "Sender" on every label.
+const STORE_INFO = {
+  name: "Doppey Apparel",
+  address: "H.No-536, Street No. 08, Moonga Nagar, Karawal Nagar, Dayalpur, Delhi - 110094",
+};
+
 export default function AdminOrders() {
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingId, setUpdatingId] = useState("");
+
+  // ← NEW: holds the order currently being printed, so the hidden
+  // label template below can render its data before window.print() fires.
+  const [printOrder, setPrintOrder] = useState(null);
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : "";
@@ -105,19 +117,33 @@ export default function AdminOrders() {
       .filter(Boolean)
       .join(", ") || "-";
 
+  // ← NEW: sets the order to print, then waits a tick for the hidden
+  // label template to render with that order's data before printing.
+  const handlePrintLabel = (order) => {
+    if (!order.waybill) {
+      alert("This order has no waybill/AWB number yet — nothing to print.");
+      return;
+    }
+    setPrintOrder(order);
+    setTimeout(() => window.print(), 150);
+  };
+
   return (
-    <Box sx={{ color: "white" }}>
-      <Typography variant="h4" gutterBottom>
+    <Box>
+      <Box sx={{ mb: 2.5 }}>
+      <Typography variant="h4" sx={{ fontWeight: 800 }} gutterBottom>
         Orders
       </Typography>
+      <Typography color="text.secondary">Manage fulfilment, payments, delivery status, and shipping labels.</Typography>
+      </Box>
 
       <TextField
         placeholder="Search by Order ID, phone, or email"
         fullWidth
         sx={{
           mb: 2,
-          input: { color: "white" },
-          "& fieldset": { borderColor: "white" },
+          maxWidth: 620,
+          bgcolor: "#fff",
         }}
         value={search}
         onChange={(e) => {
@@ -126,12 +152,12 @@ export default function AdminOrders() {
         }}
       />
 
-      <TableContainer component={Paper} sx={{ background: "#111", overflowX: "auto" }}>
+      <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
         <Table sx={{ minWidth: 940 }}>
           <TableHead>
             <TableRow>
-              {["Order", "User", "Total", "Payment", "Status", "Action", "View"].map((h) => (
-                <TableCell key={h} sx={{ color: "white" }}>
+              {["Order", "User", "Total", "Payment", "Status", "Action", "View", "Label"].map((h) => (
+                <TableCell key={h}>
                   {h}
                 </TableCell>
               ))}
@@ -141,14 +167,14 @@ export default function AdminOrders() {
           <TableBody>
             {paginated.map((o) => (
               <TableRow key={o._id}>
-                <TableCell sx={{ color: "white" }}>#{o._id.slice(-6)}</TableCell>
-                <TableCell sx={{ color: "white" }}>
+                <TableCell sx={{ fontWeight: 700 }}>#{o._id.slice(-6)}</TableCell>
+                <TableCell>
   <Box>
-    <Typography sx={{ color: "white", fontWeight: 600 }}>
+    <Typography sx={{ fontWeight: 600 }}>
       {o.address?.fullName || o.user?.name || "N/A"}
     </Typography>
 
-    <Typography variant="body2" sx={{ color: "#bdbdbd" }}>
+    <Typography variant="body2" color="text.secondary">
       {o.user?.phone ||
         o.address?.phone ||
         o.user?.email ||
@@ -156,10 +182,10 @@ export default function AdminOrders() {
     </Typography>
   </Box>
 </TableCell>
-                <TableCell sx={{ color: "white" }}>Rs. {o.totalAmount}</TableCell>
-                <TableCell sx={{ color: "white" }}>{o.paymentMethod || "-"}</TableCell>
+                <TableCell>Rs. {o.totalAmount}</TableCell>
+                <TableCell>{o.paymentMethod || "-"}</TableCell>
                 <TableCell>
-                  <Chip sx={{ color: "white" }} label={o.status} color={statusColor[o.status]} />
+                  <Chip size="small" label={o.status} color={statusColor[o.status]} />
                 </TableCell>
                 <TableCell>
                   <Select
@@ -168,9 +194,7 @@ export default function AdminOrders() {
                     disabled={updatingId === o._id}
                     onChange={(e) => updateStatus(o._id, e.target.value)}
                     sx={{
-                      color: "white",
-                      "& .MuiSvgIcon-root": { color: "white" },
-                      "& fieldset": { borderColor: "white" },
+                      minWidth: 120,
                     }}
                   >
                     {statuses.map((s) => (
@@ -185,9 +209,20 @@ export default function AdminOrders() {
                     size="small"
                     variant="outlined"
                     onClick={() => setSelectedOrder(o)}
-                    sx={{ color: "white", borderColor: "white" }}
+                    sx={{ borderColor: "#d1d5db" }}
                   >
                     View
+                  </Button>
+                </TableCell>
+                <TableCell>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    disabled={!o.waybill}
+                    onClick={() => handlePrintLabel(o)}
+                    sx={{ borderColor: "#d1d5db" }}
+                  >
+                    Print Label
                   </Button>
                 </TableCell>
               </TableRow>
@@ -243,10 +278,154 @@ export default function AdminOrders() {
 
               <Typography fontWeight="bold">Address</Typography>
               <Typography>{formatAddress(selectedOrder.address)}</Typography>
+
+              <Button
+                variant="contained"
+                disabled={!selectedOrder.waybill}
+                onClick={() => handlePrintLabel(selectedOrder)}
+              >
+                Print Label
+              </Button>
             </Stack>
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ================= PRINTABLE SHIPPING LABEL =================
+          Hidden on screen at all times; only becomes visible inside
+          the browser's print dialog thanks to the @media print rules
+          below, which hide everything else on the page. */}
+      {printOrder && (
+        <Box id="print-label">
+          <Box className="labelBox">
+            <Box className="labelHeader">
+              <Typography className="labelStoreName">{STORE_INFO.name}</Typography>
+              <Typography className="labelSmall">{STORE_INFO.address}</Typography>
+            </Box>
+
+            <Box className="labelDivider" />
+
+            <Typography className="labelSectionTitle">DELIVER TO</Typography>
+            <Typography className="labelReceiverName">
+              {printOrder.address?.fullName || printOrder.user?.name || "-"}
+            </Typography>
+            <Typography className="labelText">
+              {[
+                printOrder.address?.street,
+                printOrder.address?.city,
+                printOrder.address?.state,
+                printOrder.address?.pincode,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+            </Typography>
+            <Typography className="labelText">
+              Ph: {printOrder.address?.phone || printOrder.user?.phone || "-"}
+            </Typography>
+
+            <Box className="labelDivider" />
+
+            <Box className="labelRow">
+              <Typography className="labelSmall">
+                Order #{printOrder._id?.slice(-6)}
+              </Typography>
+              <Typography className="labelSmall">
+                {printOrder.paymentMethod === "cod"
+                  ? `COD: Rs. ${printOrder.totalAmount}`
+                  : "PREPAID"}
+              </Typography>
+            </Box>
+
+            <Box className="labelBarcodeWrap">
+              <Barcode
+                value={printOrder.waybill || "NA"}
+                format="CODE128"
+                width={1.4}
+                height={45}
+                fontSize={12}
+                margin={4}
+              />
+            </Box>
+
+            <Typography className="labelSmall" sx={{ mt: 1 }}>
+              Items:{" "}
+              {printOrder.items
+                ?.map((i) => `${i.product?.name || "Item"} x${i.quantity}`)
+                .join(", ")}
+            </Typography>
+          </Box>
+        </Box>
+      )}
+
+      <style jsx global>{`
+        #print-label {
+          display: none;
+        }
+
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-label,
+          #print-label * {
+            visibility: visible;
+          }
+          #print-label {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+          }
+          .labelBox {
+            width: 4in;
+            min-height: 5.75in;
+            margin: 0 auto;
+            padding: 16px;
+            border: 2px solid #000;
+            font-family: Arial, sans-serif;
+            color: #000;
+          }
+          .labelHeader {
+            text-align: center;
+            margin-bottom: 8px;
+          }
+          .labelStoreName {
+            font-size: 16px;
+            font-weight: 700;
+          }
+          .labelSmall {
+            font-size: 11px;
+          }
+          .labelDivider {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+          }
+          .labelSectionTitle {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1px;
+          }
+          .labelReceiverName {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 2px;
+          }
+          .labelText {
+            font-size: 13px;
+            margin-top: 2px;
+          }
+          .labelRow {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 6px;
+          }
+          .labelBarcodeWrap {
+            text-align: center;
+            margin-top: 10px;
+          }
+        }
+      `}</style>
     </Box>
   );
 }

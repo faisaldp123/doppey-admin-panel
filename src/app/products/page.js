@@ -513,7 +513,14 @@ export default function ProductsPage() {
                   onClick={() => toggleArrayItem("sizes", size)}
                   variant={form.sizes.includes(size) ? "filled" : "outlined"}
                   color={form.sizes.includes(size) ? "primary" : "default"}
-                  sx={{ color: "white", borderColor: "#555", cursor: "pointer" }}
+                  sx={{
+                    color: form.sizes.includes(size) ? "#fff" : "#374151",
+                    bgcolor: form.sizes.includes(size) ? "#e11d48" : "#fff",
+                    borderColor: form.sizes.includes(size) ? "#e11d48" : "#d1d5db",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    "&:hover": { bgcolor: form.sizes.includes(size) ? "#be123c" : "#fff1f2" },
+                  }}
                 />
               ))}
             </Box>
@@ -526,7 +533,14 @@ export default function ProductsPage() {
                   onClick={() => toggleArrayItem("colors", color)}
                   variant={form.colors.includes(color) ? "filled" : "outlined"}
                   color={form.colors.includes(color) ? "secondary" : "default"}
-                  sx={{ color: "white", borderColor: "#555", cursor: "pointer" }}
+                  sx={{
+                    color: form.colors.includes(color) ? "#fff" : "#374151",
+                    bgcolor: form.colors.includes(color) ? "#334155" : "#fff",
+                    borderColor: form.colors.includes(color) ? "#334155" : "#d1d5db",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                    "&:hover": { bgcolor: form.colors.includes(color) ? "#1e293b" : "#fff1f2" },
+                  }}
                 />
               ))}
             </Box>

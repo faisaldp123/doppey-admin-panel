@@ -1,13 +1,6 @@
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #f7f7f8;
+  --foreground: #1f2937;
 }
 
 html,
@@ -35,8 +28,62 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+.MuiPaper-root {
+  background-color: #fff !important;
+}
+
+.MuiTableContainer-root,
+.MuiTable-root,
+.MuiTableBody-root .MuiTableRow-root {
+  background-color: #fff !important;
+}
+
+.MuiTableHead-root .MuiTableRow-root,
+.MuiTableHead-root .MuiTableCell-root {
+  background-color: #f9fafb !important;
+}
+
+.MuiDialog-paper,
+.MuiDialogContent-root,
+.MuiDialogActions-root {
+  background-color: #fff !important;
+  color: #1f2937 !important;
+}
+
+.MuiTableCell-root,
+.MuiTypography-root,
+.MuiInputBase-input,
+.MuiFormLabel-root,
+.MuiSelect-select {
+  color: #1f2937 !important;
+}
+
+.MuiButton-outlined {
+  border-color: #d1d5db !important;
+  color: #374151 !important;
+}
+
+.MuiSvgIcon-root {
+  color: inherit;
+}
+
+.MuiTableRow-root:hover {
+  background-color: #fff1f2 !important;
+}
+
+.MuiTableBody-root .MuiTableRow-root:hover,
+.MuiTableBody-root .MuiTableRow-root:hover .MuiTableCell-root {
+  background-color: #fff1f2 !important;
+}
+
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiSelect-select {
+  background-color: #fff !important;
+}
+
+@media (max-width: 600px) {
+  .MuiTableCell-root {
+    padding: 10px 12px;
   }
 }

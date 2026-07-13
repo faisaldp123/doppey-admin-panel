@@ -66,25 +66,42 @@ export default function AdminLogin() {
     <Box
       sx={{
         minHeight: "100vh",
-        bgcolor: "#0f0f1a",
+        bgcolor: "#f7f7f8",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        p: 2,
       }}
     >
       <Paper
         elevation={10}
         sx={{
-          width: 400,
-          bgcolor: "#121212",
+          width: "min(960px, 100%)",
           borderRadius: 2,
           overflow: "hidden",
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "1.05fr 0.95fr" },
         }}
       >
-        {/* TOP BORDER */}
-        <Box sx={{ height: 5, bgcolor: "#6C63FF" }} />
+        <Box
+          sx={{
+            minHeight: { xs: 210, md: 560 },
+            position: "relative",
+            backgroundImage: "linear-gradient(rgba(20, 12, 14, 0.26), rgba(20, 12, 14, 0.5)), url('/login-banner.webp')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            display: { xs: "none", md: "flex" },
+            alignItems: "flex-end",
+            p: 5,
+          }}
+        >
+          <Box sx={{ color: "#fff" }}>
+            <Typography variant="h3" sx={{ fontWeight: 800, color: "#fff", mb: 1 }}>Doppey Apparel</Typography>
+            <Typography sx={{ color: "#fff", maxWidth: 340 }}>Store management, fulfilment, and customer care in one place.</Typography>
+          </Box>
+        </Box>
 
-        <Box sx={{ p: 4, textAlign: "center" }}>
+        <Box sx={{ p: { xs: 3, sm: 5 }, textAlign: "center", alignSelf: "center" }}>
           {/* LOGO */}
           <Box sx={{ mb: 2 }}>
             <Image
@@ -99,12 +116,12 @@ export default function AdminLogin() {
           {/* TITLE */}
           <Typography
             variant="h5"
-            sx={{ color: "#fff", fontWeight: 600, mb: 1 }}
+            sx={{ color: "#1f2937", fontWeight: 700, mb: 1 }}
           >
             Admin Login
           </Typography>
 
-          <Typography sx={{ color: "#aaa", mb: 3 }}>
+          <Typography sx={{ color: "#6b7280", mb: 3 }}>
             Login to manage your store
           </Typography>
 
@@ -130,11 +147,11 @@ export default function AdminLogin() {
             }}
             sx={{
               mb: 2,
-              input: { color: "#fff" },
+              input: { color: "#1f2937" },
               "& .MuiOutlinedInput-root": {
-                "& fieldset": { borderColor: "#444" },
-                "&:hover fieldset": { borderColor: "#888" },
-                "&.Mui-focused fieldset": { borderColor: "#6C63FF" },
+                "& fieldset": { borderColor: "#d1d5db" },
+                "&:hover fieldset": { borderColor: "#9ca3af" },
+                "&.Mui-focused fieldset": { borderColor: "#e11d48" },
               },
             }}
           />
@@ -154,11 +171,11 @@ export default function AdminLogin() {
             sx={{
               mt: 1,
               py: 1.3,
-              bgcolor: "#6C63FF",
+              bgcolor: "#e11d48",
               color: "#fff",
               fontWeight: 600,
               textTransform: "none",
-              "&:hover": { bgcolor: "#5a52d4" },
+              "&:hover": { bgcolor: "#be123c" },
               "&:disabled": {
                 bgcolor: "#444",
                 color: "#aaa",

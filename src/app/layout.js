@@ -16,6 +16,8 @@ import {
   Button,
   IconButton,
   useMediaQuery,
+  ThemeProvider,
+  createTheme,
 } from "@mui/material";
 
 import DashboardIcon from "@mui/icons-material/Dashboard";
@@ -41,8 +43,22 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const drawerWidth = 240;
-const collapsedWidth = 70;
+const drawerWidth = 264;
+
+const theme = createTheme({
+  palette: {
+    mode: "light",
+    primary: { main: "#e11d48", dark: "#be123c" },
+    background: { default: "#f7f7f8", paper: "#ffffff" },
+    text: { primary: "#1f2937", secondary: "#6b7280" },
+  },
+  shape: { borderRadius: 8 },
+  typography: { fontFamily: "Arial, Helvetica, sans-serif", button: { textTransform: "none", fontWeight: 700 } },
+  components: {
+    MuiPaper: { styleOverrides: { root: { border: "1px solid #e5e7eb", boxShadow: "0 1px 2px rgba(15, 23, 42, 0.04)" } } },
+    MuiTableCell: { styleOverrides: { head: { background: "#f9fafb", color: "#4b5563", fontWeight: 700 }, root: { borderColor: "#edf0f2" } } },
+  },
+});
 
 export default function RootLayout({ children }) {
   const pathname = usePathname();
@@ -93,24 +109,28 @@ export default function RootLayout({ children }) {
 ];
 
   const drawerContent = (
-    <Box>
-      <Toolbar />
-      <List>
+    <Box sx={{ height: "100%" }}>
+      <Box sx={{ height: 72, px: 2.5, display: "flex", alignItems: "center", borderBottom: "1px solid #e5e7eb" }}>
+        <Typography sx={{ fontWeight: 800, color: "#171717", letterSpacing: 0.4 }}>DOPPEY <Box component="span" sx={{ color: "#e11d48" }}>APPAREL</Box></Typography>
+      </Box>
+      <List sx={{ px: 1.25, py: 1.5 }}>
         {menuItems.map((item) => (
           <ListItem key={item.href} disablePadding>
             <Link href={item.href} passHref legacyBehavior>
               <ListItemButton
                 component="a"
                 sx={{
-                  justifyContent: isMobile ? "center" : "flex-start",
-                  bgcolor: pathname === item.href ? "#2e2e42" : "transparent",
-                  "&:hover": { bgcolor: "#2e2e42" },
+                  borderRadius: 1.5,
+                  mb: 0.25,
+                  bgcolor: pathname === item.href ? "#fff1f2" : "transparent",
+                  color: pathname === item.href ? "#be123c" : "#4b5563",
+                  "&:hover": { bgcolor: "#f3f4f6" },
                 }}
               >
-                <ListItemIcon sx={{ color: "#fff", minWidth: isMobile ? "auto" : 40 }}>
+                <ListItemIcon sx={{ color: "inherit", minWidth: 38 }}>
                   {item.icon}
                 </ListItemIcon>
-                {!isMobile && <ListItemText primary={item.label} />}
+                <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: 14, fontWeight: pathname === item.href ? 700 : 500 }} />
               </ListItemButton>
             </Link>
           </ListItem>
@@ -122,7 +142,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
-        <Box sx={{ display: "flex", bgcolor: "#000", minHeight: "100vh" }}>
+        <ThemeProvider theme={theme}>
+        <Box sx={{ display: "flex", bgcolor: "#f7f7f8", minHeight: "100vh" }}>
           <CssBaseline />
 
           {isLoggedIn && (
@@ -131,12 +152,12 @@ export default function RootLayout({ children }) {
               open={isMobile ? mobileOpen : true}
               onClose={() => setMobileOpen(false)}
               sx={{
-                width: isMobile ? collapsedWidth : drawerWidth,
+                width: drawerWidth,
                 "& .MuiDrawer-paper": {
-                  width: isMobile ? collapsedWidth : drawerWidth,
-                  bgcolor: "#111",
-                  color: "#fff",
-                  borderRight: "1px solid #222",
+                  width: drawerWidth,
+                  bgcolor: "#fff",
+                  color: "#1f2937",
+                  borderRight: "1px solid #e5e7eb",
                 },
               }}
             >
@@ -148,11 +169,12 @@ export default function RootLayout({ children }) {
             <AppBar
               position="fixed"
               sx={{
-                width: `calc(100% - ${isMobile ? collapsedWidth : drawerWidth}px)`,
-                ml: `${isMobile ? collapsedWidth : drawerWidth}px`,
-                bgcolor: "#1e1e2f",
+                width: isMobile ? "100%" : `calc(100% - ${drawerWidth}px)`,
+                ml: isMobile ? 0 : `${drawerWidth}px`,
+                bgcolor: "rgba(255,255,255,0.96)",
+                color: "#1f2937",
                 boxShadow: "none",
-                borderBottom: "1px solid #2e2e42",
+                borderBottom: "1px solid #e5e7eb",
               }}
             >
               <Toolbar sx={{ justifyContent: "space-between" }}>
@@ -162,12 +184,12 @@ export default function RootLayout({ children }) {
                       <MenuIcon />
                     </IconButton>
                   )}
-                  <Typography variant="h6" fontWeight="bold">
-                    Doppey Admin Panel
+                  <Typography variant="subtitle1" fontWeight={800}>
+                    Store Operations
                   </Typography>
                 </Box>
                 <Button
-                  color="error"
+                  color="primary"
                   variant="contained"
                   onClick={() => {
                     localStorage.removeItem("token");
@@ -185,9 +207,9 @@ export default function RootLayout({ children }) {
             sx={{
               flexGrow: 1,
               minWidth: 0,
-              p: 3,
+              p: { xs: 2, sm: 3 },
               width: "100%",
-              bgcolor: "#0f0f1a",
+              bgcolor: "#f7f7f8",
               minHeight: "100vh",
             }}
           >
@@ -195,6 +217,7 @@ export default function RootLayout({ children }) {
             {children}
           </Box>
         </Box>
+        </ThemeProvider>
       </body>
     </html>
   );
