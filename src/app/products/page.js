@@ -26,6 +26,7 @@ import {
   Divider,
   TableContainer,
   Paper,
+  TablePagination,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
@@ -88,6 +89,8 @@ export default function ProductsPage() {
   const [editId,        setEditId]        = useState(null);
   const [loading,       setLoading]       = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
+  const [page,          setPage]          = useState(0);
+  const rowsPerPage = 10;
   const [previewVideo,  setPreviewVideo]  = useState("");
   const [customColor,   setCustomColor]   = useState("");
   const [form,          setForm]          = useState(EMPTY_FORM);
@@ -325,7 +328,7 @@ export default function ProductsPage() {
           </TableHead>
 
           <TableBody>
-            {products.map((p) => (
+            {products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((p) => (
               <TableRow
                 key={p._id}
                 sx={{
@@ -363,8 +366,8 @@ export default function ProductsPage() {
                   ₹{p.price}
                 </TableCell>
 
-                <TableCell sx={{ color: "white", whiteSpace: "nowrap", borderBottom: "1px solid #222" }}>
-                  {p.stock}
+                <TableCell sx={{ whiteSpace: "nowrap", borderBottom: "1px solid #222", color: Number(p.stock) > 0 ? "#81c784" : "#ff8a80", fontWeight: 700 }}>
+                  {Number(p.stock) > 0 ? `${p.stock} in stock` : "Out of stock"}
                 </TableCell>
 
                 <TableCell sx={{ color: "#4caf50", whiteSpace: "nowrap", borderBottom: "1px solid #222" }}>
@@ -456,6 +459,15 @@ export default function ProductsPage() {
           </TableBody>
         </Table>
       </TableContainer>
+      <TablePagination
+        component="div"
+        count={products.length}
+        page={page}
+        onPageChange={(_, nextPage) => setPage(nextPage)}
+        rowsPerPage={rowsPerPage}
+        rowsPerPageOptions={[]}
+        labelRowsPerPage="Products per page"
+      />
 
       {/* ================= MODAL ================= */}
       <Dialog open={open} onClose={handleCloseModal} fullWidth maxWidth="md">

@@ -9,27 +9,34 @@ import {
   TableBody,
   Typography,
   Box,
+  TableContainer,
+  Paper,
+  TablePagination,
 } from "@mui/material";
 
 const API = process.env.NEXT_PUBLIC_API_URL;
 
 export default function PaymentsPage() {
   const [data, setData] = useState([]);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
 
   useEffect(() => {
     axios.get(`${API}/payments`).then((res) => setData(res.data));
   }, []);
 
   return (
-    <Box sx={{ color: "#fff" }}>
+    <Box sx={{ color: "#fff", width: "100%", minWidth: 0 }}>
       {/* TITLE */}
       <Typography variant="h5" mb={2} sx={{ color: "#fff", fontWeight: 600 }}>
         Payments
       </Typography>
 
       {/* TABLE */}
+      <TableContainer component={Paper} sx={{ width: "100%", maxWidth: "100%", minWidth: 0, display: "block", overflowX: "scroll", overflowY: "hidden", WebkitOverflowScrolling: "touch", bgcolor: "#121212", borderRadius: 2, "&::-webkit-scrollbar": { height: 8 }, "&::-webkit-scrollbar-thumb": { backgroundColor: "#9ca3af", borderRadius: 4 } }}>
       <Table
         sx={{
+          minWidth: 900,
           bgcolor: "#121212",
           borderRadius: 2,
           overflow: "hidden",
@@ -67,7 +74,7 @@ export default function PaymentsPage() {
               </TableCell>
             </TableRow>
           ) : (
-            data.map((p) => (
+            data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((p) => (
               <TableRow
                 key={p._id}
                 sx={{
@@ -86,6 +93,8 @@ export default function PaymentsPage() {
           )}
         </TableBody>
       </Table>
+      </TableContainer>
+      <TablePagination component="div" count={data.length} page={page} onPageChange={(_, nextPage) => setPage(nextPage)} rowsPerPage={rowsPerPage} rowsPerPageOptions={[]} labelRowsPerPage="Payments per page" />
     </Box>
   );
 }

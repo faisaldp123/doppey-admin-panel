@@ -57,7 +57,7 @@ export default function AdminOrders() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : "";
 
-  const LIMIT = 6;
+  const LIMIT = 10;
 
   const fetchOrders = async () => {
     try {

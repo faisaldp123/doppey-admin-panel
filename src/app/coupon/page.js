@@ -10,6 +10,9 @@ import {
   TableCell,
   TableHead,
   TableRow,
+  TableContainer,
+  Paper,
+  TablePagination,
   Dialog,
   DialogContent,
   DialogActions,
@@ -35,6 +38,8 @@ export default function CouponsPage() {
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 10;
 
   const [form, setForm] = useState({
     code: "",
@@ -153,7 +158,8 @@ export default function CouponsPage() {
         Add Coupon
       </Button>
 
-      <Table sx={{ mt: 2 }}>
+      <TableContainer component={Paper} sx={{ mt: 2, width: "100%", maxWidth: "100%", minWidth: 0, display: "block", overflowX: "scroll", overflowY: "hidden", WebkitOverflowScrolling: "touch", bgcolor: "#111", "&::-webkit-scrollbar": { height: 8 }, "&::-webkit-scrollbar-thumb": { backgroundColor: "#9ca3af", borderRadius: 4 } }}>
+      <Table sx={{ minWidth: 850 }}>
         <TableHead>
           <TableRow>
             {["Code", "Discount", "Expiry", "Status", "Actions"].map((h) => (
@@ -164,7 +170,7 @@ export default function CouponsPage() {
           </TableRow>
         </TableHead>
         <TableBody>
-          {coupons.map((c) => (
+          {coupons.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((c) => (
             <TableRow key={c._id}>
               <TableCell sx={{ color: "white" }}>{c.code}</TableCell>
               <TableCell sx={{ color: "white" }}>
@@ -190,6 +196,8 @@ export default function CouponsPage() {
           ))}
         </TableBody>
       </Table>
+      </TableContainer>
+      <TablePagination component="div" count={coupons.length} page={page} onPageChange={(_, nextPage) => setPage(nextPage)} rowsPerPage={rowsPerPage} rowsPerPageOptions={[]} labelRowsPerPage="Coupons per page" />
 
       {/* ================= MODAL ================= */}
 
